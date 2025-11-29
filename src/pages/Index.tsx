@@ -85,10 +85,10 @@ const Index = () => {
             <span className="text-xl font-bold">Code Vibez Tool Kit</span>
           </div>
           <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => navigate("/projects")}>
+            <Button variant="ghost" onClick={() => navigate("/auth")}>
               Sign in
             </Button>
-            <Button onClick={() => navigate("/projects")}>
+            <Button onClick={() => navigate("/auth")}>
               Get started
             </Button>
           </div>
@@ -115,7 +115,7 @@ const Index = () => {
             <Button 
               size="lg" 
               className="text-lg px-10 py-6 h-auto rounded-full"
-              onClick={() => navigate("/projects")}
+              onClick={() => navigate("/auth")}
             >
               Start Building Now
             </Button>
@@ -262,7 +262,7 @@ const Index = () => {
                   <span className="text-foreground">{feature}</span>
                 </div>
               ))}
-              <Button className="w-full mt-8" size="lg" onClick={() => navigate("/projects")}>
+              <Button className="w-full mt-8" size="lg" onClick={() => navigate("/auth")}>
                 Get Started
               </Button>
             </CardContent>
