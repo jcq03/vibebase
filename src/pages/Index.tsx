@@ -74,9 +74,9 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <nav className="border-b border-border bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
@@ -96,7 +96,7 @@ const Index = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-background">
+      <section className="relative overflow-hidden bg-white">
         <div className="container mx-auto px-4 py-20 md:py-32">
           <div className="max-w-4xl mx-auto text-center space-y-8">
             <div className="inline-block px-4 py-2 bg-muted rounded-full text-sm font-medium mb-4">
@@ -124,7 +124,7 @@ const Index = () => {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-24 bg-muted/30">
+      <section className="py-24 bg-gray-50/50">
         <div className="container mx-auto px-4">
           <div className="inline-block px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium mb-12">
             How It Works
@@ -146,7 +146,7 @@ const Index = () => {
                     className={`p-6 rounded-xl border-2 transition-all ${
                       step.active
                         ? "border-primary bg-primary/5"
-                        : "border-border bg-background"
+                        : "border-gray-200 bg-white"
                     }`}
                   >
                     <div className="flex items-start gap-4">
@@ -184,7 +184,7 @@ const Index = () => {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-24 bg-background">
+      <section className="py-24 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
@@ -226,7 +226,7 @@ const Index = () => {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-24 bg-muted/30">
+      <section className="py-24 bg-gray-50/50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
@@ -271,7 +271,7 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border py-12 bg-background">
+      <footer className="border-t border-border py-12 bg-white">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="text-center md:text-left">
