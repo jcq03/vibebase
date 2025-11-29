@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Plus, Send, Sparkles, Github, ZoomIn, ZoomOut, X, PanelRightOpen, PanelLeftOpen, FolderKanban } from "lucide-react";
+import { Plus, Send, Sparkles, Github, ZoomIn, ZoomOut, X, PanelRightOpen, ArrowLeft } from "lucide-react";
 
 const ProjectView = () => {
+  const navigate = useNavigate();
   const [messages, setMessages] = useState([
     {
       role: "assistant",
@@ -16,7 +18,6 @@ const ProjectView = () => {
   ]);
   const [input, setInput] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   
   // Draggable state for each card
   const [dragging, setDragging] = useState<string | null>(null);
@@ -92,47 +93,15 @@ const ProjectView = () => {
 
   return (
     <div className="fixed inset-0 bg-black flex overflow-hidden">
-      {/* Left Sidebar */}
-      {leftSidebarOpen && (
-        <div className="w-64 border-r border-zinc-800 bg-zinc-900 flex flex-col">
-          <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
-            <h2 className="font-semibold text-zinc-100">Navigation</h2>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-6 w-6 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
-              onClick={() => setLeftSidebarOpen(false)}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-          
-          <div className="flex-1 p-4">
-            <div className="space-y-2">
-              <Button variant="ghost" className="w-full justify-start text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100">
-                <FolderKanban className="h-4 w-4 mr-2" />
-                Projects
-              </Button>
-              <Button variant="ghost" className="w-full justify-start text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100">
-                <Sparkles className="h-4 w-4 mr-2" />
-                Templates
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Reopen Left Sidebar Button */}
-      {!leftSidebarOpen && (
-        <Button
-          size="icon"
-          variant="outline"
-          className="fixed top-4 left-4 z-50 bg-zinc-900/90 border-zinc-700 text-zinc-300 hover:bg-zinc-800"
-          onClick={() => setLeftSidebarOpen(true)}
-        >
-          <PanelLeftOpen className="h-4 w-4" />
-        </Button>
-      )}
+      {/* Back Button */}
+      <Button
+        size="icon"
+        variant="outline"
+        className="fixed top-4 left-4 z-50 bg-zinc-900/90 border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+        onClick={() => navigate('/projects')}
+      >
+        <ArrowLeft className="h-4 w-4" />
+      </Button>
 
       {/* Main Canvas Area */}
       <div 
