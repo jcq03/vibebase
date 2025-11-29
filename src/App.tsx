@@ -33,6 +33,11 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/projects/:id" element={
+            <ProtectedRoute>
+              <ProjectView />
+            </ProtectedRoute>
+          } />
           <Route path="/*" element={
             <ProtectedRoute>
               <SidebarProvider>
@@ -46,7 +51,6 @@ const App = () => (
                       <Routes>
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/projects" element={<Projects />} />
-                        <Route path="/projects/:id" element={<ProjectView />} />
                         <Route path="/ideas" element={<Ideas />} />
                         <Route path="/features" element={<Features />} />
                         <Route path="/tools" element={<Tools />} />
