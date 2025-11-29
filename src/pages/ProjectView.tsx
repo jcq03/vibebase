@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +27,17 @@ const ProjectView = () => {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
+
+  // Track viewport size
+  useEffect(() => {
+    const updateSize = () => {
+      setViewportSize({ width: window.innerWidth, height: window.innerHeight });
+    };
+    updateSize();
+    window.addEventListener('resize', updateSize);
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);
 
   const handleMouseDown = (e: React.MouseEvent, card: string) => {
     setDragging(card);
@@ -121,9 +132,9 @@ const ProjectView = () => {
           {/* Line from competitors to center */}
           <line
             x1={positions.competitors.x + 128}
-            y1={positions.competitors.y + 150}
-            x2={window.innerWidth / 2 + positions.center.x}
-            y2={window.innerHeight / 2 + positions.center.y}
+            y1={positions.competitors.y + 100}
+            x2={viewportSize.width / 2 + positions.center.x}
+            y2={viewportSize.height / 2 + positions.center.y}
             stroke="white"
             strokeWidth="2"
             strokeDasharray="8,8"
@@ -132,9 +143,9 @@ const ProjectView = () => {
           {/* Line from tech to center */}
           <line
             x1={positions.tech.x + 128}
-            y1={positions.tech.y + 150}
-            x2={window.innerWidth / 2 + positions.center.x}
-            y2={window.innerHeight / 2 + positions.center.y}
+            y1={positions.tech.y + 100}
+            x2={viewportSize.width / 2 + positions.center.x}
+            y2={viewportSize.height / 2 + positions.center.y}
             stroke="white"
             strokeWidth="2"
             strokeDasharray="8,8"
@@ -143,9 +154,9 @@ const ProjectView = () => {
           {/* Line from features to center */}
           <line
             x1={positions.features.x + 128}
-            y1={positions.features.y + 150}
-            x2={window.innerWidth / 2 + positions.center.x}
-            y2={window.innerHeight / 2 + positions.center.y}
+            y1={positions.features.y + 100}
+            x2={viewportSize.width / 2 + positions.center.x}
+            y2={viewportSize.height / 2 + positions.center.y}
             stroke="white"
             strokeWidth="2"
             strokeDasharray="8,8"
