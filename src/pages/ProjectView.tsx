@@ -22,10 +22,10 @@ const ProjectView = () => {
   // Draggable state for each card
   const [dragging, setDragging] = useState<string | null>(null);
   const [positions, setPositions] = useState({
-    center: { x: 0, y: 0 },
-    tech: { x: 950, y: 16 },
-    features: { x: 950, y: 450 },
-    competitors: { x: 16, y: 16 },
+    ideaFeatures: { x: 16, y: 16 },
+    appType: { x: 950, y: 16 },
+    tools: { x: 950, y: 450 },
+    phases: { x: 16, y: 450 },
   });
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
@@ -143,195 +143,197 @@ const ProjectView = () => {
             transform: `scale(${zoom}) translate(${panOffset.x}px, ${panOffset.y}px)`,
           }}
         >
-          {/* Central Project Card */}
-          <div 
-            className="absolute top-1/2 left-1/2 cursor-move"
-            style={{ 
-              zIndex: dragging === 'center' ? 20 : 10,
-              transform: `translate(calc(-50% + ${positions.center.x}px), calc(-50% + ${positions.center.y}px))`,
-            }}
-            onMouseDown={(e) => handleMouseDown(e, 'center')}
-          >
-            <Card className="w-72 bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-2xl select-none">
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between mb-2">
-                  <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">Core Idea</Badge>
-                  <Github className="h-5 w-5 text-zinc-500" />
-                </div>
-                <CardTitle className="text-2xl text-zinc-100">Simple Note Taker</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-zinc-400 mb-4">
-                  An innovative project. We are building a simple note taker app
-                  with rich text features only a simple UI.
-                </p>
-                <div className="flex gap-2 mb-4">
-                  <Button variant="outline" size="sm" className="flex-1 border-zinc-700 text-zinc-300 hover:bg-zinc-800">
-                    <Sparkles className="h-4 w-4 mr-1" />
-                    Show the CodeString Dashboard
-                  </Button>
-                </div>
-                <Input placeholder="https://github.com/user/repo..." className="mb-2 bg-zinc-800 border-zinc-700 text-zinc-200" />
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Technology Stack - Top Right */}
+          {/* Idea & Features - Top Left */}
           <div 
             className="absolute cursor-move"
             style={{ 
-              zIndex: dragging === 'tech' ? 20 : 10,
-              left: `${positions.tech.x}px`,
-              top: `${positions.tech.y}px`,
+              zIndex: dragging === 'ideaFeatures' ? 20 : 10,
+              left: `${positions.ideaFeatures.x}px`,
+              top: `${positions.ideaFeatures.y}px`,
             }}
-            onMouseDown={(e) => handleMouseDown(e, 'tech')}
+            onMouseDown={(e) => handleMouseDown(e, 'ideaFeatures')}
           >
             <Card className="w-64 bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg text-zinc-100">Technology Stack</CardTitle>
+                  <CardTitle className="text-lg text-zinc-100">Idea & Features</CardTitle>
                   <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800">
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
+                <p className="text-xs text-zinc-500">Core concept and functionality</p>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200">Next.js 14</div>
+                  <div className="text-sm font-medium text-zinc-200">Note Creation</div>
                   <p className="text-xs text-zinc-500">
-                    App Router & Server Actions for streamlined development
+                    Quick and easy note creation with rich text support
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200">Drizzle ORM</div>
+                  <div className="text-sm font-medium text-zinc-200">Organization</div>
                   <p className="text-xs text-zinc-500">
-                    Database management with type-safe queries
+                    Category-based organization for better management
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200">Clerk.dev</div>
+                  <div className="text-sm font-medium text-zinc-200">Search & Filter</div>
                   <p className="text-xs text-zinc-500">
-                    User authentication and session management
+                    Find notes quickly with search and filtering options
+                  </p>
+                </div>
+                <Button variant="outline" size="sm" className="w-full mt-2 border-zinc-700 text-zinc-300 hover:bg-zinc-800">
+                  + Add Feature
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Type of Application - Top Right */}
+          <div 
+            className="absolute cursor-move"
+            style={{ 
+              zIndex: dragging === 'appType' ? 20 : 10,
+              left: `${positions.appType.x}px`,
+              top: `${positions.appType.y}px`,
+            }}
+            onMouseDown={(e) => handleMouseDown(e, 'appType')}
+          >
+            <Card className="w-64 bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg text-zinc-100">Type of Application</CardTitle>
+                  <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                <p className="text-xs text-zinc-500">Application category and scope</p>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="space-y-2">
+                  <div className="text-sm font-medium text-zinc-200">Web Application</div>
+                  <p className="text-xs text-zinc-500">
+                    Browser-based app accessible on any device
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200">ShadCN UI</div>
+                  <div className="text-sm font-medium text-zinc-200">Productivity Tool</div>
                   <p className="text-xs text-zinc-500">
-                    UI components for rapid design
+                    Designed to help users organize and manage information
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-sm font-medium text-zinc-200">Single User</div>
+                  <p className="text-xs text-zinc-500">
+                    Personal note-taking without collaboration features
+                  </p>
+                </div>
+                <Button variant="outline" size="sm" className="w-full mt-2 border-zinc-700 text-zinc-300 hover:bg-zinc-800">
+                  + Add Detail
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Tools to Use to Build - Bottom Right */}
+          <div 
+            className="absolute cursor-move"
+            style={{ 
+              zIndex: dragging === 'tools' ? 20 : 10,
+              left: `${positions.tools.x}px`,
+              top: `${positions.tools.y}px`,
+            }}
+            onMouseDown={(e) => handleMouseDown(e, 'tools')}
+          >
+            <Card className="w-64 bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg text-zinc-100">Tools to Use to Build</CardTitle>
+                  <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                <p className="text-xs text-zinc-500">Development stack and tools</p>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="space-y-2">
+                  <div className="text-sm font-medium text-zinc-200">React + TypeScript</div>
+                  <p className="text-xs text-zinc-500">
+                    Modern frontend framework with type safety
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-sm font-medium text-zinc-200">Supabase</div>
+                  <p className="text-xs text-zinc-500">
+                    Database and authentication backend
                   </p>
                 </div>
                 <div className="space-y-2">
                   <div className="text-sm font-medium text-zinc-200">Tailwind CSS</div>
                   <p className="text-xs text-zinc-500">
-                    Styling with utility-first CSS for clean design
+                    Utility-first styling framework
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-sm font-medium text-zinc-200">Vite</div>
+                  <p className="text-xs text-zinc-500">
+                    Fast build tool and development server
                   </p>
                 </div>
                 <Button variant="outline" size="sm" className="w-full mt-2 border-zinc-700 text-zinc-300 hover:bg-zinc-800">
-                  + Add Card
+                  + Add Tool
                 </Button>
               </CardContent>
             </Card>
           </div>
 
-          {/* Features - Bottom Right */}
+          {/* Phase Building - Bottom Left */}
           <div 
             className="absolute cursor-move"
             style={{ 
-              zIndex: dragging === 'features' ? 20 : 10,
-              left: `${positions.features.x}px`,
-              top: `${positions.features.y}px`,
+              zIndex: dragging === 'phases' ? 20 : 10,
+              left: `${positions.phases.x}px`,
+              top: `${positions.phases.y}px`,
             }}
-            onMouseDown={(e) => handleMouseDown(e, 'features')}
+            onMouseDown={(e) => handleMouseDown(e, 'phases')}
           >
             <Card className="w-64 bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg text-zinc-100">Features</CardTitle>
+                  <CardTitle className="text-lg text-zinc-100">Phase Building</CardTitle>
                   <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800">
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
-                <p className="text-xs text-zinc-500">Core features and functionality</p>
+                <p className="text-xs text-zinc-500">Development roadmap and milestones</p>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200">Notes Dashboard</div>
+                  <div className="text-sm font-medium text-zinc-200">Phase 1: Setup</div>
                   <p className="text-xs text-zinc-500">
-                    View, search, and manage all your notes in a centralized dashboard
+                    Initialize project, set up database and authentication
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200">Note Editor</div>
+                  <div className="text-sm font-medium text-zinc-200">Phase 2: Core Features</div>
                   <p className="text-xs text-zinc-500">
-                    Create and edit notes with a rich text editor
+                    Build note creation, editing, and basic organization
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200">Categories & Organisation</div>
+                  <div className="text-sm font-medium text-zinc-200">Phase 3: Polish</div>
                   <p className="text-xs text-zinc-500">
-                    Attach notes to categories for better organization
+                    Add search, filters, and improve user experience
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200">Database & Storage</div>
+                  <div className="text-sm font-medium text-zinc-200">Phase 4: Launch</div>
                   <p className="text-xs text-zinc-500">
-                    Store notes securely using a proper database
+                    Testing, bug fixes, and deployment to production
                   </p>
                 </div>
                 <Button variant="outline" size="sm" className="w-full mt-2 border-zinc-700 text-zinc-300 hover:bg-zinc-800">
-                  + Add Card
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Competitors - Top Left */}
-          <div 
-            className="absolute cursor-move"
-            style={{ 
-              zIndex: dragging === 'competitors' ? 20 : 10,
-              left: `${positions.competitors.x}px`,
-              top: `${positions.competitors.y}px`,
-            }}
-            onMouseDown={(e) => handleMouseDown(e, 'competitors')}
-          >
-            <Card className="w-64 bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg text-zinc-100">Competitors</CardTitle>
-                  <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800">
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-                <p className="text-xs text-zinc-500">Market research and alternatives</p>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200">Evernote</div>
-                  <p className="text-xs text-zinc-500">
-                    A full-featured note-taking app with web clipper, templates, and cloud sync
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200">Microsoft OneNote</div>
-                  <p className="text-xs text-zinc-500">
-                    A digital notebook with free editing, drawing, note organization
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200">Google Keep</div>
-                  <p className="text-xs text-zinc-500">
-                    Simple note-taking integrated with Google services
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200">Notion</div>
-                  <p className="text-xs text-zinc-500">
-                    All-in-one workspace for notes, docs, and collaboration
-                  </p>
-                </div>
-                <Button variant="outline" size="sm" className="w-full mt-2 border-zinc-700 text-zinc-300 hover:bg-zinc-800">
-                  + Add Card
+                  + Add Phase
                 </Button>
               </CardContent>
             </Card>
