@@ -26,11 +26,54 @@ const ProjectView = () => {
   return (
     <div className="min-h-screen bg-background flex">
       {/* Main Canvas Area */}
-      <div className="flex-1 relative overflow-hidden">
+      <div className="flex-1 relative overflow-hidden bg-gradient-to-br from-background via-background to-accent/5">
+        {/* Connecting Lines SVG Overlay */}
+        <svg className="absolute inset-0 pointer-events-none" style={{ zIndex: 1 }}>
+          <defs>
+            <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style={{ stopColor: "hsl(var(--primary))", stopOpacity: 0.3 }} />
+              <stop offset="100%" style={{ stopColor: "hsl(var(--primary))", stopOpacity: 0.5 }} />
+            </linearGradient>
+          </defs>
+          {/* Lines connecting cards to center */}
+          <path
+            d="M 320 200 Q 450 300, 580 420"
+            stroke="url(#lineGradient)"
+            strokeWidth="2"
+            fill="none"
+            strokeDasharray="8,4"
+            className="opacity-60"
+          />
+          <path
+            d="M 320 650 Q 450 550, 580 480"
+            stroke="url(#lineGradient)"
+            strokeWidth="2"
+            fill="none"
+            strokeDasharray="8,4"
+            className="opacity-60"
+          />
+          <path
+            d="M 950 200 Q 820 300, 690 420"
+            stroke="url(#lineGradient)"
+            strokeWidth="2"
+            fill="none"
+            strokeDasharray="8,4"
+            className="opacity-60"
+          />
+          <path
+            d="M 950 650 Q 820 550, 690 480"
+            stroke="url(#lineGradient)"
+            strokeWidth="2"
+            fill="none"
+            strokeDasharray="8,4"
+            className="opacity-60"
+          />
+        </svg>
+
         <div className="absolute inset-0 p-8">
           {/* Central Project Card */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-            <Card className="w-96 bg-card/95 backdrop-blur border-2">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ zIndex: 10 }}>
+            <Card className="w-96 bg-card/95 backdrop-blur border-2 shadow-xl">
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between mb-2">
                   <Badge variant="secondary">Core Idea</Badge>
@@ -55,8 +98,8 @@ const ProjectView = () => {
           </div>
 
           {/* Technology Stack - Top Right */}
-          <div className="absolute top-8 right-8 w-80">
-            <Card className="bg-card/95 backdrop-blur">
+          <div className="absolute top-16 right-16 w-80" style={{ zIndex: 10 }}>
+            <Card className="bg-card/95 backdrop-blur border-border/50 shadow-lg">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">Technology Stack</CardTitle>
@@ -103,9 +146,9 @@ const ProjectView = () => {
             </Card>
           </div>
 
-          {/* Features - Right Side */}
-          <div className="absolute bottom-8 right-8 w-80">
-            <Card className="bg-card/95 backdrop-blur">
+          {/* Features - Bottom Right */}
+          <div className="absolute bottom-16 right-16 w-80" style={{ zIndex: 10 }}>
+            <Card className="bg-card/95 backdrop-blur border-border/50 shadow-lg">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">Features</CardTitle>
@@ -147,9 +190,9 @@ const ProjectView = () => {
             </Card>
           </div>
 
-          {/* Competitors - Left Side */}
-          <div className="absolute top-8 left-8 w-80">
-            <Card className="bg-card/95 backdrop-blur">
+          {/* Competitors - Top Left */}
+          <div className="absolute top-16 left-16 w-80" style={{ zIndex: 10 }}>
+            <Card className="bg-card/95 backdrop-blur border-border/50 shadow-lg">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">Competitors</CardTitle>
@@ -190,38 +233,6 @@ const ProjectView = () => {
               </CardContent>
             </Card>
           </div>
-
-          {/* Connecting Lines SVG Overlay */}
-          <svg className="absolute inset-0 pointer-events-none" style={{ zIndex: 5 }}>
-            <defs>
-              <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.2" />
-                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.6" />
-              </linearGradient>
-            </defs>
-            {/* Lines connecting cards to center */}
-            <path
-              d="M 50% 50% Q 75% 25%, 85% 15%"
-              stroke="url(#lineGradient)"
-              strokeWidth="2"
-              fill="none"
-              strokeDasharray="5,5"
-            />
-            <path
-              d="M 50% 50% Q 75% 75%, 85% 85%"
-              stroke="url(#lineGradient)"
-              strokeWidth="2"
-              fill="none"
-              strokeDasharray="5,5"
-            />
-            <path
-              d="M 50% 50% Q 25% 25%, 15% 15%"
-              stroke="url(#lineGradient)"
-              strokeWidth="2"
-              fill="none"
-              strokeDasharray="5,5"
-            />
-          </svg>
         </div>
       </div>
 
