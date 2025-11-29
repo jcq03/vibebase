@@ -41,7 +41,9 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Welcome to CodeVibez</h1>
+          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary via-primary to-secondary bg-clip-text text-transparent">
+            Welcome to CodeVibez
+          </h1>
           <p className="text-muted-foreground text-lg">
             Your AI-powered companion for building amazing software
           </p>
@@ -51,11 +53,11 @@ const Dashboard = () => {
           {quickActions.map((action, index) => (
             <Card 
               key={index} 
-              className="group cursor-pointer hover:shadow-lg transition-all hover:scale-105"
+              className="group cursor-pointer hover:shadow-2xl hover:shadow-primary/20 transition-all hover:scale-105 bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/50"
               onClick={action.action}
             >
               <CardHeader>
-                <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${action.color} flex items-center justify-center mb-4`}>
+                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${action.color} flex items-center justify-center mb-4 shadow-lg group-hover:shadow-xl transition-shadow`}>
                   <action.icon className="h-6 w-6 text-white" />
                 </div>
                 <CardTitle className="text-lg">{action.title}</CardTitle>
@@ -70,7 +72,7 @@ const Dashboard = () => {
           ))}
         </div>
 
-        <Card>
+        <Card className="bg-card/50 backdrop-blur-sm border-border/50">
           <CardHeader>
             <CardTitle>Getting Started</CardTitle>
             <CardDescription>Follow these steps to bring your idea to life</CardDescription>
@@ -84,11 +86,11 @@ const Dashboard = () => {
                 "Visualize your build plan",
                 "Get AI assistance while coding"
               ].map((step, index) => (
-                <div key={index} className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold">
+                <div key={index} className="flex items-center gap-3 group/step">
+                  <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold shadow-lg shadow-primary/30 group-hover/step:scale-110 transition-transform">
                     {index + 1}
                   </div>
-                  <p className="text-foreground">{step}</p>
+                  <p className="text-foreground group-hover/step:text-primary transition-colors">{step}</p>
                 </div>
               ))}
             </div>
