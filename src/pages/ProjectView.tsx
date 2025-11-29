@@ -89,7 +89,7 @@ const ProjectView = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black flex">
+    <div className="h-screen bg-black flex overflow-hidden">
       {/* Main Canvas Area */}
       <div 
         className="flex-1 relative overflow-hidden bg-black"
