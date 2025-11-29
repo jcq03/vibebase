@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Plus, Send, Sparkles, Github } from "lucide-react";
+import { Plus, Send, Sparkles, Github, ZoomIn, ZoomOut } from "lucide-react";
 
 const ProjectView = () => {
   const [messages, setMessages] = useState([
@@ -25,6 +25,8 @@ const ProjectView = () => {
     competitors: { x: 16, y: 16 },
   });
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
 
   const handleMouseDown = (e: React.MouseEvent, card: string) => {
     setDragging(card);
@@ -49,6 +51,25 @@ const ProjectView = () => {
     setDragging(null);
   };
 
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY * -0.001;
+    const newZoom = Math.min(Math.max(0.3, zoom + delta), 2);
+    setZoom(newZoom);
+  };
+
+  const handleZoomIn = () => {
+    setZoom((prev) => Math.min(prev + 0.1, 2));
+  };
+
+  const handleZoomOut = () => {
+    setZoom((prev) => Math.max(prev - 0.1, 0.3));
+  };
+
+  const handleResetZoom = () => {
+    setZoom(1);
+  };
+
   const handleSend = () => {
     if (input.trim()) {
       setMessages([...messages, { role: "user", content: input }]);
@@ -63,7 +84,35 @@ const ProjectView = () => {
         className="flex-1 relative overflow-hidden bg-black"
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
+        onWheel={handleWheel}
       >
+        {/* Zoom Controls */}
+        <div className="absolute top-4 right-4 z-50 flex flex-col gap-2">
+          <Button
+            size="icon"
+            variant="outline"
+            className="bg-zinc-900/90 border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+            onClick={handleZoomIn}
+          >
+            <ZoomIn className="h-4 w-4" />
+          </Button>
+          <Button
+            size="icon"
+            variant="outline"
+            className="bg-zinc-900/90 border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+            onClick={handleZoomOut}
+          >
+            <ZoomOut className="h-4 w-4" />
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="bg-zinc-900/90 border-zinc-700 text-zinc-300 hover:bg-zinc-800 text-xs"
+            onClick={handleResetZoom}
+          >
+            {Math.round(zoom * 100)}%
+          </Button>
+        </div>
         {/* Connecting Lines SVG Overlay */}
         <svg className="absolute inset-0 pointer-events-none" style={{ zIndex: 1 }}>
           {/* Lines connecting cards to center */}
@@ -101,7 +150,12 @@ const ProjectView = () => {
           />
         </svg>
 
-        <div className="absolute inset-0 p-8">
+        <div 
+          className="absolute inset-0 p-8 transition-transform duration-200 origin-center"
+          style={{ 
+            transform: `scale(${zoom}) translate(${panOffset.x}px, ${panOffset.y}px)`,
+          }}
+        >
           {/* Central Project Card */}
           <div 
             className="absolute top-1/2 left-1/2 cursor-move"
