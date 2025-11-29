@@ -70,7 +70,7 @@ export function AppSidebar() {
                     <NavLink 
                       to={item.url} 
                       end={item.url === "/dashboard"} 
-                      className="flex items-center gap-3 px-4 py-2 hover:bg-accent transition-colors"
+                      className="flex items-center gap-3 px-4 py-2 hover:bg-accent hover:text-foreground transition-colors"
                       activeClassName="bg-primary text-primary-foreground font-medium"
                     >
                       <item.icon className="h-5 w-5 flex-shrink-0" />
@@ -94,7 +94,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink 
                       to={item.url} 
-                      className="flex items-center gap-3 px-4 py-2 hover:bg-accent transition-colors"
+                      className="flex items-center gap-3 px-4 py-2 hover:bg-accent hover:text-foreground transition-colors"
                       activeClassName="bg-primary text-primary-foreground font-medium"
                     >
                       <item.icon className="h-5 w-5 flex-shrink-0" />
