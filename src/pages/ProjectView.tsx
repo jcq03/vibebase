@@ -28,11 +28,6 @@ const ProjectView = () => {
   const [zoom, setZoom] = useState(1);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
-  
-  // Line drawing state
-  const [drawingLine, setDrawingLine] = useState<{ from: string; x: number; y: number } | null>(null);
-  const [lines, setLines] = useState<Array<{ from: string; to: string }>>([]);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   // Track viewport size
   useEffect(() => {
@@ -53,17 +48,14 @@ const ProjectView = () => {
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    setMousePos({ x: e.clientX, y: e.clientY });
-    
-    if (dragging) {
-      setPositions((prev) => ({
-        ...prev,
-        [dragging]: {
-          x: e.clientX - dragStart.x,
-          y: e.clientY - dragStart.y,
-        },
-      }));
-    }
+    if (!dragging) return;
+    setPositions((prev) => ({
+      ...prev,
+      [dragging]: {
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y,
+      },
+    }));
   };
 
   const handleMouseUp = () => {
@@ -87,88 +79,6 @@ const ProjectView = () => {
 
   const handleResetZoom = () => {
     setZoom(1);
-  };
-
-  const handleCardClick = (e: React.MouseEvent, cardId: string) => {
-    // Only handle line drawing on shift+click
-    if (!e.shiftKey) return;
-    
-    e.stopPropagation();
-    
-    if (!drawingLine) {
-      // Start drawing a line
-      const rect = e.currentTarget.getBoundingClientRect();
-      setDrawingLine({
-        from: cardId,
-        x: rect.left + rect.width / 2,
-        y: rect.top + rect.height / 2,
-      });
-    } else if (drawingLine.from !== cardId) {
-      // Complete the line
-      setLines([...lines, { from: drawingLine.from, to: cardId }]);
-      setDrawingLine(null);
-    }
-  };
-
-  const getCardCenter = (cardId: string) => {
-    const pos = positions[cardId as keyof typeof positions];
-    const cardWidth = cardId === 'center' ? 288 : 256; // w-72 = 288px, w-64 = 256px
-    const cardHeight = 200; // approximate
-    
-    if (cardId === 'center') {
-      return {
-        x: viewportSize.width / 2 + pos.x,
-        y: viewportSize.height / 2 + pos.y,
-        width: cardWidth,
-        height: cardHeight,
-      };
-    }
-    
-    return {
-      x: pos.x + cardWidth / 2,
-      y: pos.y + cardHeight / 2,
-      width: cardWidth,
-      height: cardHeight,
-    };
-  };
-
-  const getEdgePoint = (from: { x: number; y: number; width: number; height: number }, to: { x: number; y: number; width: number; height: number }) => {
-    // Calculate angle from 'from' center to 'to' center
-    const dx = to.x - from.x;
-    const dy = to.y - from.y;
-    const angle = Math.atan2(dy, dx);
-    
-    // Calculate edge points
-    const getPointOnEdge = (center: { x: number; y: number; width: number; height: number }, angle: number) => {
-      const w = center.width / 2;
-      const h = center.height / 2;
-      
-      // Determine which edge the line intersects
-      const cos = Math.cos(angle);
-      const sin = Math.sin(angle);
-      
-      // Check intersection with each edge
-      const tanAngle = Math.tan(angle);
-      
-      if (Math.abs(cos) > Math.abs(sin)) {
-        // Intersects left or right edge
-        const x = cos > 0 ? w : -w;
-        const y = x * tanAngle;
-        if (Math.abs(y) <= h) {
-          return { x: center.x + x, y: center.y + y };
-        }
-      }
-      
-      // Intersects top or bottom edge
-      const y = sin > 0 ? h : -h;
-      const x = y / tanAngle;
-      return { x: center.x + x, y: center.y + y };
-    };
-    
-    return {
-      from: getPointOnEdge(from, angle),
-      to: getPointOnEdge(to, angle + Math.PI), // opposite direction
-    };
   };
 
   const handleSend = () => {
@@ -214,54 +124,6 @@ const ProjectView = () => {
             {Math.round(zoom * 100)}%
           </Button>
         </div>
-        {/* Manually Drawn Lines */}
-        <svg 
-          className="absolute inset-0 w-full h-full pointer-events-none transition-transform duration-200 origin-center" 
-          style={{ 
-            zIndex: 5,
-            transform: `scale(${zoom}) translate(${panOffset.x}px, ${panOffset.y}px)`,
-          }}
-        >
-          {/* Render saved lines */}
-          {lines.map((line, idx) => {
-            const from = getCardCenter(line.from);
-            const to = getCardCenter(line.to);
-            const edgePoints = getEdgePoint(from, to);
-            return (
-              <line
-                key={idx}
-                x1={edgePoints.from.x}
-                y1={edgePoints.from.y}
-                x2={edgePoints.to.x}
-                y2={edgePoints.to.y}
-                stroke="white"
-                strokeWidth="2"
-                strokeDasharray="8,8"
-                opacity="0.6"
-              />
-            );
-          })}
-          
-          {/* Line being drawn */}
-          {drawingLine && (
-            <line
-              x1={drawingLine.x}
-              y1={drawingLine.y}
-              x2={mousePos.x}
-              y2={mousePos.y}
-              stroke="white"
-              strokeWidth="2"
-              strokeDasharray="8,8"
-              opacity="0.4"
-            />
-          )}
-        </svg>
-        
-        {/* Drawing instruction */}
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 bg-zinc-900/90 border border-zinc-700 px-4 py-2 rounded-lg">
-          <p className="text-sm text-zinc-300">Hold Shift + Click cards to draw lines</p>
-        </div>
-
         <div 
           className="absolute inset-0 p-8 transition-transform duration-200 origin-center"
           style={{ 
@@ -276,7 +138,6 @@ const ProjectView = () => {
               transform: `translate(calc(-50% + ${positions.center.x}px), calc(-50% + ${positions.center.y}px))`,
             }}
             onMouseDown={(e) => handleMouseDown(e, 'center')}
-            onClick={(e) => handleCardClick(e, 'center')}
           >
             <Card className="w-72 bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-2xl select-none">
               <CardHeader className="pb-4">
@@ -311,7 +172,6 @@ const ProjectView = () => {
               top: `${positions.tech.y}px`,
             }}
             onMouseDown={(e) => handleMouseDown(e, 'tech')}
-            onClick={(e) => handleCardClick(e, 'tech')}
           >
             <Card className="w-64 bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none">
               <CardHeader className="pb-3">
@@ -369,7 +229,6 @@ const ProjectView = () => {
               top: `${positions.features.y}px`,
             }}
             onMouseDown={(e) => handleMouseDown(e, 'features')}
-            onClick={(e) => handleCardClick(e, 'features')}
           >
             <Card className="w-64 bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none">
               <CardHeader className="pb-3">
@@ -422,7 +281,6 @@ const ProjectView = () => {
               top: `${positions.competitors.y}px`,
             }}
             onMouseDown={(e) => handleMouseDown(e, 'competitors')}
-            onClick={(e) => handleCardClick(e, 'competitors')}
           >
             <Card className="w-64 bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none">
               <CardHeader className="pb-3">
