@@ -119,12 +119,55 @@ const ProjectView = () => {
       return {
         x: viewportSize.width / 2 + pos.x,
         y: viewportSize.height / 2 + pos.y,
+        width: cardWidth,
+        height: cardHeight,
       };
     }
     
     return {
       x: pos.x + cardWidth / 2,
       y: pos.y + cardHeight / 2,
+      width: cardWidth,
+      height: cardHeight,
+    };
+  };
+
+  const getEdgePoint = (from: { x: number; y: number; width: number; height: number }, to: { x: number; y: number; width: number; height: number }) => {
+    // Calculate angle from 'from' center to 'to' center
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    const angle = Math.atan2(dy, dx);
+    
+    // Calculate edge points
+    const getPointOnEdge = (center: { x: number; y: number; width: number; height: number }, angle: number) => {
+      const w = center.width / 2;
+      const h = center.height / 2;
+      
+      // Determine which edge the line intersects
+      const cos = Math.cos(angle);
+      const sin = Math.sin(angle);
+      
+      // Check intersection with each edge
+      const tanAngle = Math.tan(angle);
+      
+      if (Math.abs(cos) > Math.abs(sin)) {
+        // Intersects left or right edge
+        const x = cos > 0 ? w : -w;
+        const y = x * tanAngle;
+        if (Math.abs(y) <= h) {
+          return { x: center.x + x, y: center.y + y };
+        }
+      }
+      
+      // Intersects top or bottom edge
+      const y = sin > 0 ? h : -h;
+      const x = y / tanAngle;
+      return { x: center.x + x, y: center.y + y };
+    };
+    
+    return {
+      from: getPointOnEdge(from, angle),
+      to: getPointOnEdge(to, angle + Math.PI), // opposite direction
     };
   };
 
@@ -183,13 +226,14 @@ const ProjectView = () => {
           {lines.map((line, idx) => {
             const from = getCardCenter(line.from);
             const to = getCardCenter(line.to);
+            const edgePoints = getEdgePoint(from, to);
             return (
               <line
                 key={idx}
-                x1={from.x}
-                y1={from.y}
-                x2={to.x}
-                y2={to.y}
+                x1={edgePoints.from.x}
+                y1={edgePoints.from.y}
+                x2={edgePoints.to.x}
+                y2={edgePoints.to.y}
                 stroke="white"
                 strokeWidth="2"
                 strokeDasharray="8,8"
