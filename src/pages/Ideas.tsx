@@ -165,7 +165,10 @@ const Ideas = () => {
                           ))}
                         </ul>
                       </div>
-                      <Button className="w-full mt-4">Select This Idea</Button>
+                      <div className="flex gap-2 mt-4">
+                        <Button className="flex-1">Select This Idea</Button>
+                        <Button variant="secondary" className="flex-1">Go to Whiteboard</Button>
+                      </div>
                     </CardContent>
                   </Card>
                 ))
