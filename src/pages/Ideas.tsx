@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { Sparkles, ShoppingCart, Home as HomeIcon, Dumbbell, Wrench, Users, Briefcase } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const niches = [
   { name: "E-commerce", icon: ShoppingCart, color: "from-blue-500 to-cyan-500" },
@@ -18,16 +20,16 @@ const niches = [
 
 const Ideas = () => {
   const [selectedNiche, setSelectedNiche] = useState<string | null>(null);
-  const [customPrompt, setCustomPrompt] = useState("");
+  const [description, setDescription] = useState("");
   const [generatedIdeas, setGeneratedIdeas] = useState<any[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
 
-  const handleGenerate = () => {
-    if (!selectedNiche && !customPrompt) {
+  const handleGenerate = async () => {
+    if (!selectedNiche) {
       toast({
         title: "Selection Required",
-        description: "Please select a niche or enter a custom prompt",
+        description: "Please select a niche",
         variant: "destructive"
       });
       return;
@@ -35,36 +37,38 @@ const Ideas = () => {
 
     setIsGenerating(true);
     
-    // Simulate AI generation
-    setTimeout(() => {
-      const ideas = [
-        {
-          concept: `AI-Powered ${selectedNiche || "Business"} Platform`,
-          audience: "Small to medium businesses",
-          problem: "Manual processes and inefficient workflows",
-          angle: "Automated solution with intelligent recommendations"
-        },
-        {
-          concept: `${selectedNiche || "Industry"} Marketplace`,
-          audience: "Professionals and service providers",
-          problem: "Difficulty connecting with clients",
-          angle: "Smart matching algorithm with built-in communication"
-        },
-        {
-          concept: `${selectedNiche || "Sector"} Analytics Dashboard`,
-          audience: "Business owners and managers",
-          problem: "Lack of data-driven insights",
-          angle: "Real-time analytics with predictive modeling"
-        },
-      ];
-      
-      setGeneratedIdeas(ideas);
-      setIsGenerating(false);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-ideas', {
+        body: { niche: selectedNiche, description }
+      });
+
+      if (error) throw error;
+
+      if (data?.error) {
+        toast({
+          title: "Error",
+          description: data.error,
+          variant: "destructive"
+        });
+        setIsGenerating(false);
+        return;
+      }
+
+      setGeneratedIdeas(data.ideas || []);
       toast({
         title: "Ideas Generated!",
-        description: "3 unique concepts ready for you"
+        description: `${data.ideas?.length || 0} unique concepts ready for you`
       });
-    }, 2000);
+    } catch (error) {
+      console.error('Error generating ideas:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate ideas. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -100,12 +104,13 @@ const Ideas = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="prompt">Custom Prompt (Optional)</Label>
-                  <Input
-                    id="prompt"
-                    placeholder="Describe your idea..."
-                    value={customPrompt}
-                    onChange={(e) => setCustomPrompt(e.target.value)}
+                  <Label htmlFor="description">Description (Optional)</Label>
+                  <Textarea
+                    id="description"
+                    placeholder="Describe what you're looking for..."
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    rows={3}
                   />
                 </div>
 
@@ -144,17 +149,21 @@ const Ideas = () => {
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-3">
+                      {idea.description && (
+                        <div>
+                          <p className="text-foreground">{idea.description}</p>
+                        </div>
+                      )}
                       <div>
-                        <p className="font-semibold text-sm text-muted-foreground">Target Audience</p>
-                        <p className="text-foreground">{idea.audience}</p>
-                      </div>
-                      <div>
-                        <p className="font-semibold text-sm text-muted-foreground">Problem Solved</p>
-                        <p className="text-foreground">{idea.problem}</p>
-                      </div>
-                      <div>
-                        <p className="font-semibold text-sm text-muted-foreground">Unique Angle</p>
-                        <p className="text-foreground">{idea.angle}</p>
+                        <p className="font-semibold text-sm text-muted-foreground mb-2">Key Features</p>
+                        <ul className="space-y-1">
+                          {idea.features?.map((feature: string, idx: number) => (
+                            <li key={idx} className="text-foreground text-sm flex items-start">
+                              <span className="mr-2">•</span>
+                              <span>{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                       <Button className="w-full mt-4">Select This Idea</Button>
                     </CardContent>
