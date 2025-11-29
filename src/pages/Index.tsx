@@ -201,7 +201,7 @@ const Index = () => {
                 <CardContent className="pt-6 space-y-4">
                   <div className="flex gap-1">
                     {[...Array(testimonial.stars)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-primary text-primary" />
+                      <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                     ))}
                   </div>
                   <p className="text-foreground leading-relaxed">
