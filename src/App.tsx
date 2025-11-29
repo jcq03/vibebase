@@ -16,6 +16,9 @@ import Tools from "./pages/Tools";
 import BuildPlan from "./pages/BuildPlan";
 import BuildAssistant from "./pages/BuildAssistant";
 import Profile from "./pages/Profile";
+import Courses from "./pages/Courses";
+import LiveCalls from "./pages/LiveCalls";
+import Community from "./pages/Community";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -50,6 +53,9 @@ const App = () => (
                         <Route path="/build-plan" element={<BuildPlan />} />
                         <Route path="/build-assistant" element={<BuildAssistant />} />
                         <Route path="/profile" element={<Profile />} />
+                        <Route path="/courses" element={<Courses />} />
+                        <Route path="/live-calls" element={<LiveCalls />} />
+                        <Route path="/community" element={<Community />} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </main>
