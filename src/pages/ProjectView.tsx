@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Plus, Send, Sparkles, Github, ZoomIn, ZoomOut } from "lucide-react";
+import { Plus, Send, Sparkles, Github, ZoomIn, ZoomOut, X, PanelRightOpen } from "lucide-react";
 
 const ProjectView = () => {
   const [messages, setMessages] = useState([
@@ -15,6 +15,7 @@ const ProjectView = () => {
     },
   ]);
   const [input, setInput] = useState("");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   
   // Draggable state for each card
   const [dragging, setDragging] = useState<string | null>(null);
@@ -326,17 +327,41 @@ const ProjectView = () => {
         </div>
       </div>
 
+      {/* Reopen Sidebar Button */}
+      {!sidebarOpen && (
+        <Button
+          size="icon"
+          variant="outline"
+          className="fixed top-4 right-4 z-50 bg-zinc-900/90 border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+          onClick={() => setSidebarOpen(true)}
+        >
+          <PanelRightOpen className="h-4 w-4" />
+        </Button>
+      )}
+
       {/* AI Assistant Sidebar */}
-      <div className="w-80 border-l border-zinc-800 bg-zinc-900 flex flex-col">
-        <div className="p-4 border-b border-zinc-800">
-          <div className="flex items-center gap-2 mb-1">
-            <Sparkles className="h-5 w-5 text-primary" />
-            <h2 className="font-semibold text-zinc-100">AI Assistant</h2>
+      {sidebarOpen && (
+        <div className="w-80 border-l border-zinc-800 bg-zinc-900 flex flex-col">
+          <div className="p-4 border-b border-zinc-800">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-medium text-zinc-400">Simple Note Taker</h3>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-6 w-6 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
+                onClick={() => setSidebarOpen(false)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="flex items-center gap-2 mb-1">
+              <Sparkles className="h-5 w-5 text-primary" />
+              <h2 className="font-semibold text-zinc-100">AI Assistant</h2>
+            </div>
+            <p className="text-xs text-zinc-500">
+              Get help organizing your project
+            </p>
           </div>
-          <p className="text-xs text-zinc-500">
-            Get help organizing your project
-          </p>
-        </div>
 
         <ScrollArea className="flex-1 p-4">
           <div className="space-y-4">
@@ -379,7 +404,8 @@ const ProjectView = () => {
             </Button>
           </div>
         </div>
-      </div>
+        </div>
+      )}
     </div>
   );
 };
