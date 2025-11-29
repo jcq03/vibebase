@@ -173,8 +173,11 @@ const ProjectView = () => {
         </div>
         {/* Manually Drawn Lines */}
         <svg 
-          className="absolute inset-0 w-full h-full pointer-events-none" 
-          style={{ zIndex: 5 }}
+          className="absolute inset-0 w-full h-full pointer-events-none transition-transform duration-200 origin-center" 
+          style={{ 
+            zIndex: 5,
+            transform: `scale(${zoom}) translate(${panOffset.x}px, ${panOffset.y}px)`,
+          }}
         >
           {/* Render saved lines */}
           {lines.map((line, idx) => {
