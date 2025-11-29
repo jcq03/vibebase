@@ -1,4 +1,4 @@
-import { Home, Lightbulb, Layers, Wrench, Map, MessageSquare, User } from "lucide-react";
+import { Home, Lightbulb, Layers, Wrench, Map, MessageSquare, User, FolderKanban } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import {
   Sidebar,
@@ -13,6 +13,7 @@ import {
 
 const navItems = [
   { title: "Dashboard", url: "/", icon: Home },
+  { title: "Projects", url: "/projects", icon: FolderKanban },
   { title: "Ideas", url: "/ideas", icon: Lightbulb },
   { title: "Features", url: "/features", icon: Layers },
   { title: "Tools", url: "/tools", icon: Wrench },
