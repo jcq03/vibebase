@@ -114,39 +114,40 @@ const ProjectView = () => {
           </Button>
         </div>
         {/* Connecting Lines SVG Overlay */}
-        <svg className="absolute inset-0 pointer-events-none" style={{ zIndex: 1 }}>
-          {/* Lines connecting cards to center */}
+        <svg 
+          className="absolute inset-0 pointer-events-none" 
+          style={{ 
+            zIndex: 5,
+            transform: `scale(${zoom})`,
+            transformOrigin: 'center',
+          }}
+        >
+          {/* Line from competitors to center */}
           <path
-            d="M 320 200 Q 450 300, 580 420"
+            d={`M ${positions.competitors.x + 128} ${positions.competitors.y + 100} Q ${(positions.competitors.x + 128 + window.innerWidth / 2) / 2} ${(positions.competitors.y + 100 + window.innerHeight / 2) / 2}, ${window.innerWidth / 2} ${window.innerHeight / 2}`}
             stroke="rgb(100, 100, 100)"
             strokeWidth="1.5"
             fill="none"
             strokeDasharray="6,6"
-            className="opacity-50"
+            className="opacity-40"
           />
+          {/* Line from tech to center */}
           <path
-            d="M 320 650 Q 450 550, 580 480"
+            d={`M ${positions.tech.x + 128} ${positions.tech.y + 100} Q ${(positions.tech.x + 128 + window.innerWidth / 2) / 2} ${(positions.tech.y + 100 + window.innerHeight / 2) / 2}, ${window.innerWidth / 2} ${window.innerHeight / 2}`}
             stroke="rgb(100, 100, 100)"
             strokeWidth="1.5"
             fill="none"
             strokeDasharray="6,6"
-            className="opacity-50"
+            className="opacity-40"
           />
+          {/* Line from features to center */}
           <path
-            d="M 950 200 Q 820 300, 690 420"
+            d={`M ${positions.features.x + 128} ${positions.features.y + 100} Q ${(positions.features.x + 128 + window.innerWidth / 2) / 2} ${(positions.features.y + 100 + window.innerHeight / 2) / 2}, ${window.innerWidth / 2} ${window.innerHeight / 2}`}
             stroke="rgb(100, 100, 100)"
             strokeWidth="1.5"
             fill="none"
             strokeDasharray="6,6"
-            className="opacity-50"
-          />
-          <path
-            d="M 950 650 Q 820 550, 690 480"
-            stroke="rgb(100, 100, 100)"
-            strokeWidth="1.5"
-            fill="none"
-            strokeDasharray="6,6"
-            className="opacity-50"
+            className="opacity-40"
           />
         </svg>
 
