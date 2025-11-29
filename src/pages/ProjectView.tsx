@@ -15,6 +15,39 @@ const ProjectView = () => {
     },
   ]);
   const [input, setInput] = useState("");
+  
+  // Draggable state for each card
+  const [dragging, setDragging] = useState<string | null>(null);
+  const [positions, setPositions] = useState({
+    center: { x: 0, y: 0 },
+    tech: { x: 950, y: 16 },
+    features: { x: 950, y: 450 },
+    competitors: { x: 16, y: 16 },
+  });
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+  const handleMouseDown = (e: React.MouseEvent, card: string) => {
+    setDragging(card);
+    setDragStart({
+      x: e.clientX - positions[card as keyof typeof positions].x,
+      y: e.clientY - positions[card as keyof typeof positions].y,
+    });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!dragging) return;
+    setPositions((prev) => ({
+      ...prev,
+      [dragging]: {
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y,
+      },
+    }));
+  };
+
+  const handleMouseUp = () => {
+    setDragging(null);
+  };
 
   const handleSend = () => {
     if (input.trim()) {
@@ -26,7 +59,11 @@ const ProjectView = () => {
   return (
     <div className="min-h-screen bg-black flex">
       {/* Main Canvas Area */}
-      <div className="flex-1 relative overflow-hidden bg-black">
+      <div 
+        className="flex-1 relative overflow-hidden bg-black"
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+      >
         {/* Connecting Lines SVG Overlay */}
         <svg className="absolute inset-0 pointer-events-none" style={{ zIndex: 1 }}>
           {/* Lines connecting cards to center */}
@@ -66,8 +103,15 @@ const ProjectView = () => {
 
         <div className="absolute inset-0 p-8">
           {/* Central Project Card */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ zIndex: 10 }}>
-            <Card className="w-96 bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-2xl">
+          <div 
+            className="absolute top-1/2 left-1/2 cursor-move"
+            style={{ 
+              zIndex: dragging === 'center' ? 20 : 10,
+              transform: `translate(calc(-50% + ${positions.center.x}px), calc(-50% + ${positions.center.y}px))`,
+            }}
+            onMouseDown={(e) => handleMouseDown(e, 'center')}
+          >
+            <Card className="w-72 bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-2xl select-none">
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between mb-2">
                   <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">Core Idea</Badge>
@@ -92,8 +136,16 @@ const ProjectView = () => {
           </div>
 
           {/* Technology Stack - Top Right */}
-          <div className="absolute top-16 right-16 w-80" style={{ zIndex: 10 }}>
-            <Card className="bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl">
+          <div 
+            className="absolute cursor-move"
+            style={{ 
+              zIndex: dragging === 'tech' ? 20 : 10,
+              left: `${positions.tech.x}px`,
+              top: `${positions.tech.y}px`,
+            }}
+            onMouseDown={(e) => handleMouseDown(e, 'tech')}
+          >
+            <Card className="w-64 bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg text-zinc-100">Technology Stack</CardTitle>
@@ -141,8 +193,16 @@ const ProjectView = () => {
           </div>
 
           {/* Features - Bottom Right */}
-          <div className="absolute bottom-16 right-16 w-80" style={{ zIndex: 10 }}>
-            <Card className="bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl">
+          <div 
+            className="absolute cursor-move"
+            style={{ 
+              zIndex: dragging === 'features' ? 20 : 10,
+              left: `${positions.features.x}px`,
+              top: `${positions.features.y}px`,
+            }}
+            onMouseDown={(e) => handleMouseDown(e, 'features')}
+          >
+            <Card className="w-64 bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg text-zinc-100">Features</CardTitle>
@@ -185,8 +245,16 @@ const ProjectView = () => {
           </div>
 
           {/* Competitors - Top Left */}
-          <div className="absolute top-16 left-16 w-80" style={{ zIndex: 10 }}>
-            <Card className="bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl">
+          <div 
+            className="absolute cursor-move"
+            style={{ 
+              zIndex: dragging === 'competitors' ? 20 : 10,
+              left: `${positions.competitors.x}px`,
+              top: `${positions.competitors.y}px`,
+            }}
+            onMouseDown={(e) => handleMouseDown(e, 'competitors')}
+          >
+            <Card className="w-64 bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg text-zinc-100">Competitors</CardTitle>
