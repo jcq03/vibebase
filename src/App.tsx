@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import Dashboard from "./pages/Dashboard";
+import Projects from "./pages/Projects";
+import ProjectView from "./pages/ProjectView";
 import Ideas from "./pages/Ideas";
 import Features from "./pages/Features";
 import Tools from "./pages/Tools";
@@ -32,6 +34,8 @@ const App = () => (
               <main className="flex-1">
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
+                  <Route path="/projects" element={<Projects />} />
+                  <Route path="/projects/:id" element={<ProjectView />} />
                   <Route path="/ideas" element={<Ideas />} />
                   <Route path="/features" element={<Features />} />
                   <Route path="/tools" element={<Tools />} />
