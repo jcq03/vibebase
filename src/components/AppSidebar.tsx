@@ -21,10 +21,16 @@ const navItems = [
   { title: "Projects", url: "/projects", icon: FolderKanban },
   { title: "Ideas", url: "/ideas", icon: Lightbulb },
   { title: "Features", url: "/features", icon: Layers },
-  { title: "Tools", url: "/tools", icon: Wrench },
   { title: "Build Plan", url: "/build-plan", icon: Map },
   { title: "Build Assistant", url: "/build-assistant", icon: MessageSquare },
   { title: "Profile", url: "/profile", icon: User },
+];
+
+const academyItems = [
+  { title: "Courses", url: "/courses", icon: Layers },
+  { title: "Live Calls", url: "/live-calls", icon: MessageSquare },
+  { title: "Community", url: "/community", icon: User },
+  { title: "Tools", url: "/tools", icon: Wrench },
 ];
 
 export function AppSidebar() {
@@ -67,6 +73,30 @@ export function AppSidebar() {
                     <NavLink 
                       to={item.url} 
                       end={item.url === "/dashboard"} 
+                      className="flex items-center gap-3 px-4 py-2 hover:bg-accent transition-colors"
+                      activeClassName="bg-primary text-primary-foreground font-medium"
+                    >
+                      <item.icon className="h-5 w-5 flex-shrink-0" />
+                      {open && <span>{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <div className={`px-6 mb-2 ${open ? "block" : "hidden"}`}>
+            <h2 className="text-sm font-semibold text-muted-foreground">Academy</h2>
+          </div>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {academyItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink 
+                      to={item.url} 
                       className="flex items-center gap-3 px-4 py-2 hover:bg-accent transition-colors"
                       activeClassName="bg-primary text-primary-foreground font-medium"
                     >
