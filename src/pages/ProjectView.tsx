@@ -327,7 +327,7 @@ const ProjectView = () => {
       </div>
 
       {/* AI Assistant Sidebar */}
-      <div className="w-96 border-l border-zinc-800 bg-zinc-900 flex flex-col">
+      <div className="w-80 border-l border-zinc-800 bg-zinc-900 flex flex-col">
         <div className="p-4 border-b border-zinc-800">
           <div className="flex items-center gap-2 mb-1">
             <Sparkles className="h-5 w-5 text-primary" />
