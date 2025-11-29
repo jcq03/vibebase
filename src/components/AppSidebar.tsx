@@ -20,9 +20,6 @@ const navItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Projects", url: "/projects", icon: FolderKanban },
   { title: "Ideas", url: "/ideas", icon: Lightbulb },
-  { title: "Features", url: "/features", icon: Layers },
-  { title: "Build Plan", url: "/build-plan", icon: Map },
-  { title: "Build Assistant", url: "/build-assistant", icon: MessageSquare },
   { title: "Profile", url: "/profile", icon: User },
 ];
 
