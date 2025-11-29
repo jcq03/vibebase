@@ -115,39 +115,41 @@ const ProjectView = () => {
         </div>
         {/* Connecting Lines SVG Overlay */}
         <svg 
-          className="absolute inset-0 pointer-events-none" 
-          style={{ 
-            zIndex: 5,
-            transform: `scale(${zoom})`,
-            transformOrigin: 'center',
-          }}
+          className="absolute inset-0 w-full h-full pointer-events-none" 
+          style={{ zIndex: 5 }}
         >
           {/* Line from competitors to center */}
-          <path
-            d={`M ${positions.competitors.x + 128} ${positions.competitors.y + 150} Q ${(positions.competitors.x + 128 + window.innerWidth / 2) / 2} ${(positions.competitors.y + 150 + window.innerHeight / 2) / 2}, ${window.innerWidth / 2 + positions.center.x} ${window.innerHeight / 2 + positions.center.y}`}
-            stroke="rgb(255, 255, 255)"
+          <line
+            x1={positions.competitors.x + 128}
+            y1={positions.competitors.y + 150}
+            x2={window.innerWidth / 2 + positions.center.x}
+            y2={window.innerHeight / 2 + positions.center.y}
+            stroke="white"
             strokeWidth="2"
-            fill="none"
             strokeDasharray="8,8"
-            className="opacity-70"
+            opacity="0.6"
           />
           {/* Line from tech to center */}
-          <path
-            d={`M ${positions.tech.x} ${positions.tech.y + 150} Q ${(positions.tech.x + window.innerWidth / 2) / 2} ${(positions.tech.y + 150 + window.innerHeight / 2) / 2}, ${window.innerWidth / 2 + positions.center.x} ${window.innerHeight / 2 + positions.center.y}`}
-            stroke="rgb(255, 255, 255)"
+          <line
+            x1={positions.tech.x + 128}
+            y1={positions.tech.y + 150}
+            x2={window.innerWidth / 2 + positions.center.x}
+            y2={window.innerHeight / 2 + positions.center.y}
+            stroke="white"
             strokeWidth="2"
-            fill="none"
             strokeDasharray="8,8"
-            className="opacity-70"
+            opacity="0.6"
           />
           {/* Line from features to center */}
-          <path
-            d={`M ${positions.features.x} ${positions.features.y + 150} Q ${(positions.features.x + window.innerWidth / 2) / 2} ${(positions.features.y + 150 + window.innerHeight / 2) / 2}, ${window.innerWidth / 2 + positions.center.x} ${window.innerHeight / 2 + positions.center.y}`}
-            stroke="rgb(255, 255, 255)"
+          <line
+            x1={positions.features.x + 128}
+            y1={positions.features.y + 150}
+            x2={window.innerWidth / 2 + positions.center.x}
+            y2={window.innerHeight / 2 + positions.center.y}
+            stroke="white"
             strokeWidth="2"
-            fill="none"
             strokeDasharray="8,8"
-            className="opacity-70"
+            opacity="0.6"
           />
         </svg>
 
