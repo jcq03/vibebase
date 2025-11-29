@@ -75,7 +75,7 @@ const Ideas = () => {
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Idea Generator</h1>
+          <h1 className="text-4xl font-bold mb-2">Idea & Features Generator</h1>
           <p className="text-muted-foreground text-lg">
             Let AI help you discover your next big project
           </p>
