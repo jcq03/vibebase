@@ -124,30 +124,30 @@ const ProjectView = () => {
         >
           {/* Line from competitors to center */}
           <path
-            d={`M ${positions.competitors.x + 128} ${positions.competitors.y + 100} Q ${(positions.competitors.x + 128 + window.innerWidth / 2) / 2} ${(positions.competitors.y + 100 + window.innerHeight / 2) / 2}, ${window.innerWidth / 2} ${window.innerHeight / 2}`}
-            stroke="rgb(100, 100, 100)"
-            strokeWidth="1.5"
+            d={`M ${positions.competitors.x + 128} ${positions.competitors.y + 150} Q ${(positions.competitors.x + 128 + window.innerWidth / 2) / 2} ${(positions.competitors.y + 150 + window.innerHeight / 2) / 2}, ${window.innerWidth / 2 + positions.center.x} ${window.innerHeight / 2 + positions.center.y}`}
+            stroke="rgb(255, 255, 255)"
+            strokeWidth="2"
             fill="none"
-            strokeDasharray="6,6"
-            className="opacity-40"
+            strokeDasharray="8,8"
+            className="opacity-70"
           />
           {/* Line from tech to center */}
           <path
-            d={`M ${positions.tech.x + 128} ${positions.tech.y + 100} Q ${(positions.tech.x + 128 + window.innerWidth / 2) / 2} ${(positions.tech.y + 100 + window.innerHeight / 2) / 2}, ${window.innerWidth / 2} ${window.innerHeight / 2}`}
-            stroke="rgb(100, 100, 100)"
-            strokeWidth="1.5"
+            d={`M ${positions.tech.x} ${positions.tech.y + 150} Q ${(positions.tech.x + window.innerWidth / 2) / 2} ${(positions.tech.y + 150 + window.innerHeight / 2) / 2}, ${window.innerWidth / 2 + positions.center.x} ${window.innerHeight / 2 + positions.center.y}`}
+            stroke="rgb(255, 255, 255)"
+            strokeWidth="2"
             fill="none"
-            strokeDasharray="6,6"
-            className="opacity-40"
+            strokeDasharray="8,8"
+            className="opacity-70"
           />
           {/* Line from features to center */}
           <path
-            d={`M ${positions.features.x + 128} ${positions.features.y + 100} Q ${(positions.features.x + 128 + window.innerWidth / 2) / 2} ${(positions.features.y + 100 + window.innerHeight / 2) / 2}, ${window.innerWidth / 2} ${window.innerHeight / 2}`}
-            stroke="rgb(100, 100, 100)"
-            strokeWidth="1.5"
+            d={`M ${positions.features.x} ${positions.features.y + 150} Q ${(positions.features.x + window.innerWidth / 2) / 2} ${(positions.features.y + 150 + window.innerHeight / 2) / 2}, ${window.innerWidth / 2 + positions.center.x} ${window.innerHeight / 2 + positions.center.y}`}
+            stroke="rgb(255, 255, 255)"
+            strokeWidth="2"
             fill="none"
-            strokeDasharray="6,6"
-            className="opacity-40"
+            strokeDasharray="8,8"
+            className="opacity-70"
           />
         </svg>
 
