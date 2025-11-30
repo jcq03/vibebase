@@ -149,8 +149,8 @@ const Courses = () => {
           const sectionProgress = getSectionProgress(section);
           
           return (
-            <AccordionItem key={section} value={section} className="border rounded-lg">
-              <Card>
+            <AccordionItem key={section} value={section} className="border rounded-xl overflow-hidden">
+              <Card className="border-0 rounded-xl">
                 <AccordionTrigger className="px-6 hover:no-underline">
                   <CardHeader className="p-0 w-full">
                     <div className="flex items-center justify-between w-full pr-4">
