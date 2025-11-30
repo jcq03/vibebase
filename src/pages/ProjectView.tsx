@@ -22,10 +22,10 @@ const ProjectView = () => {
   // Draggable state for each card
   const [dragging, setDragging] = useState<string | null>(null);
   const [positions, setPositions] = useState({
-    ideaFeatures: { x: 16, y: 16 },
-    appType: { x: 950, y: 16 },
-    tools: { x: 950, y: 450 },
-    phases: { x: 16, y: 450 },
+    ideaFeatures: { x: 16, y: 100 },
+    appType: { x: 300, y: 100 },
+    tools: { x: 584, y: 100 },
+    phases: { x: 868, y: 100 },
   });
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
