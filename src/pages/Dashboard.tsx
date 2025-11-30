@@ -18,7 +18,7 @@ const Dashboard = () => {
       title: "Plan Features",
       description: "Define core features and user journeys",
       icon: Layers,
-      action: () => navigate("/features"),
+      action: () => navigate("/ideas"),
       color: "from-purple-500 to-pink-500"
     },
     {
