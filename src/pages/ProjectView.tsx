@@ -127,7 +127,11 @@ const ProjectView = () => {
         onMouseUp={handleMouseUp}
         onWheel={handleWheel}
         onMouseDown={handleCanvasMouseDown}
-        style={{ cursor: isPanning ? 'grabbing' : 'grab' }}
+        style={{ 
+          cursor: isPanning ? 'grabbing' : 'grab',
+          backgroundImage: 'radial-gradient(circle, rgba(255, 255, 255, 0.7) 1px, transparent 1px)',
+          backgroundSize: '30px 30px'
+        }}
       >
         {/* Zoom Controls */}
         <div className="absolute top-4 right-4 z-50 flex flex-col gap-2">
