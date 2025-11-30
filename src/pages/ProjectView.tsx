@@ -129,7 +129,7 @@ const ProjectView = () => {
         onMouseDown={handleCanvasMouseDown}
         style={{ 
           cursor: isPanning ? 'grabbing' : 'grab',
-          backgroundImage: 'radial-gradient(circle, rgba(255, 255, 255, 0.7) 1px, transparent 1px)',
+          backgroundImage: 'radial-gradient(circle, rgba(255, 255, 255, 0.3) 1px, transparent 1px)',
           backgroundSize: '20px 20px'
         }}
       >
