@@ -26,13 +26,21 @@ const ProjectView = () => {
   
   // Draggable state for each card
   const [dragging, setDragging] = useState<string | null>(null);
+  const [resizing, setResizing] = useState<string | null>(null);
   const [positions, setPositions] = useState({
     ideaFeatures: { x: 16, y: 100 },
     appType: { x: 300, y: 100 },
     tools: { x: 584, y: 100 },
     phases: { x: 868, y: 100 },
   });
+  const [sizes, setSizes] = useState({
+    ideaFeatures: { width: 256, height: 400 },
+    appType: { width: 256, height: 400 },
+    tools: { width: 256, height: 400 },
+    phases: { width: 256, height: 400 },
+  });
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [resizeStart, setResizeStart] = useState({ width: 0, height: 0 });
   const [zoom, setZoom] = useState(1);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
@@ -46,11 +54,19 @@ const ProjectView = () => {
       
       // Try to load from localStorage first
       const savedPositions = localStorage.getItem(`project-${id}-positions`);
+      const savedSizes = localStorage.getItem(`project-${id}-sizes`);
       if (savedPositions) {
         try {
           setPositions(JSON.parse(savedPositions));
         } catch (e) {
           console.error('Error parsing saved positions:', e);
+        }
+      }
+      if (savedSizes) {
+        try {
+          setSizes(JSON.parse(savedSizes));
+        } catch (e) {
+          console.error('Error parsing saved sizes:', e);
         }
       }
 
@@ -74,20 +90,29 @@ const ProjectView = () => {
 
       if (project) {
         setProjectName(project.name);
-        setPositions(project.card_positions as typeof positions);
+        const cardData = project.card_positions as any;
+        if (cardData.positions) {
+          setPositions(cardData.positions);
+        } else {
+          setPositions(cardData as typeof positions);
+        }
+        if (cardData.sizes) {
+          setSizes(cardData.sizes);
+        }
       }
     };
 
     loadProject();
   }, [id]);
 
-  // Save positions to localStorage and database with debouncing
+  // Save positions and sizes to localStorage and database with debouncing
   useEffect(() => {
     if (!id) return;
 
-    const savePositionsNow = async () => {
+    const saveData = async () => {
       // Always save to localStorage
       localStorage.setItem(`project-${id}-positions`, JSON.stringify(positions));
+      localStorage.setItem(`project-${id}-sizes`, JSON.stringify(sizes));
 
       // Check if ID is a valid UUID before trying to save to database
       const isValidUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
@@ -98,17 +123,17 @@ const ProjectView = () => {
 
       const { error } = await supabase
         .from('projects')
-        .update({ card_positions: positions })
+        .update({ card_positions: { positions, sizes } })
         .eq('id', id);
 
       if (error) {
-        console.error('Error saving positions:', error);
+        console.error('Error saving data:', error);
       }
     };
 
-    const timeoutId = setTimeout(savePositionsNow, 1000);
+    const timeoutId = setTimeout(saveData, 1000);
     return () => clearTimeout(timeoutId);
-  }, [positions, id]);
+  }, [positions, sizes, id]);
 
   // Track viewport size
   useEffect(() => {
@@ -128,6 +153,16 @@ const ProjectView = () => {
     });
   };
 
+  const handleResizeMouseDown = (e: React.MouseEvent, card: string) => {
+    e.stopPropagation();
+    setResizing(card);
+    setDragStart({ x: e.clientX, y: e.clientY });
+    setResizeStart({
+      width: sizes[card as keyof typeof sizes].width,
+      height: sizes[card as keyof typeof sizes].height,
+    });
+  };
+
   const handleMouseMove = (e: React.MouseEvent) => {
     if (dragging) {
       setPositions((prev) => ({
@@ -135,6 +170,16 @@ const ProjectView = () => {
         [dragging]: {
           x: e.clientX - dragStart.x,
           y: e.clientY - dragStart.y,
+        },
+      }));
+    } else if (resizing) {
+      const deltaX = e.clientX - dragStart.x;
+      const deltaY = e.clientY - dragStart.y;
+      setSizes((prev) => ({
+        ...prev,
+        [resizing]: {
+          width: Math.max(200, resizeStart.width + deltaX),
+          height: Math.max(200, resizeStart.height + deltaY),
         },
       }));
     } else if (isPanning) {
@@ -147,11 +192,13 @@ const ProjectView = () => {
 
   const handleMouseUp = () => {
     setDragging(null);
+    setResizing(null);
     setIsPanning(false);
-    // Ensure the latest position is saved immediately when the user stops dragging
+    // Ensure the latest position and size are saved immediately
     const savedId = id;
     if (savedId) {
       localStorage.setItem(`project-${savedId}-positions`, JSON.stringify(positions));
+      localStorage.setItem(`project-${savedId}-sizes`, JSON.stringify(sizes));
     }
   };
 
@@ -251,13 +298,15 @@ const ProjectView = () => {
           <div 
             className="absolute cursor-move"
             style={{ 
-              zIndex: dragging === 'ideaFeatures' ? 20 : 10,
+              zIndex: dragging === 'ideaFeatures' || resizing === 'ideaFeatures' ? 20 : 10,
               left: `${positions.ideaFeatures.x}px`,
               top: `${positions.ideaFeatures.y}px`,
+              width: `${sizes.ideaFeatures.width}px`,
+              height: `${sizes.ideaFeatures.height}px`,
             }}
             onMouseDown={(e) => handleMouseDown(e, 'ideaFeatures')}
           >
-            <Card className="w-64 bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none">
+            <Card className="w-full h-full bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none relative flex flex-col">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg text-cyan-400" style={{ textShadow: '0 0 8px rgba(34, 211, 238, 0.8), 0 0 16px rgba(34, 211, 238, 0.6), 0 0 24px rgba(34, 211, 238, 0.4)' }}>Idea & Features</CardTitle>
@@ -267,7 +316,7 @@ const ProjectView = () => {
                 </div>
                 <p className="text-xs text-zinc-500">Core concept and functionality</p>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-3 flex-1 overflow-auto">
                 <div className="space-y-2">
                   <div className="text-sm font-medium text-zinc-200">Note Creation</div>
                   <p className="text-xs text-zinc-500">
@@ -290,6 +339,11 @@ const ProjectView = () => {
                   + Add Feature
                 </Button>
               </CardContent>
+              <div 
+                className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize bg-zinc-700 hover:bg-zinc-600 transition-colors"
+                onMouseDown={(e) => handleResizeMouseDown(e, 'ideaFeatures')}
+                style={{ borderRadius: '0 0 8px 0' }}
+              />
             </Card>
           </div>
 
@@ -297,13 +351,15 @@ const ProjectView = () => {
           <div 
             className="absolute cursor-move"
             style={{ 
-              zIndex: dragging === 'appType' ? 20 : 10,
+              zIndex: dragging === 'appType' || resizing === 'appType' ? 20 : 10,
               left: `${positions.appType.x}px`,
               top: `${positions.appType.y}px`,
+              width: `${sizes.appType.width}px`,
+              height: `${sizes.appType.height}px`,
             }}
             onMouseDown={(e) => handleMouseDown(e, 'appType')}
           >
-            <Card className="w-64 bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none">
+            <Card className="w-full h-full bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none relative flex flex-col">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg text-purple-400" style={{ textShadow: '0 0 8px rgba(192, 132, 252, 0.8), 0 0 16px rgba(192, 132, 252, 0.6), 0 0 24px rgba(192, 132, 252, 0.4)' }}>Type of Application</CardTitle>
@@ -313,7 +369,7 @@ const ProjectView = () => {
                 </div>
                 <p className="text-xs text-zinc-500">Application category and scope</p>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-3 flex-1 overflow-auto">
                 <div className="space-y-2">
                   <div className="text-sm font-medium text-zinc-200">Web Application</div>
                   <p className="text-xs text-zinc-500">
@@ -336,6 +392,11 @@ const ProjectView = () => {
                   + Add Detail
                 </Button>
               </CardContent>
+              <div 
+                className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize bg-zinc-700 hover:bg-zinc-600 transition-colors"
+                onMouseDown={(e) => handleResizeMouseDown(e, 'appType')}
+                style={{ borderRadius: '0 0 8px 0' }}
+              />
             </Card>
           </div>
 
@@ -343,13 +404,15 @@ const ProjectView = () => {
           <div 
             className="absolute cursor-move"
             style={{ 
-              zIndex: dragging === 'tools' ? 20 : 10,
+              zIndex: dragging === 'tools' || resizing === 'tools' ? 20 : 10,
               left: `${positions.tools.x}px`,
               top: `${positions.tools.y}px`,
+              width: `${sizes.tools.width}px`,
+              height: `${sizes.tools.height}px`,
             }}
             onMouseDown={(e) => handleMouseDown(e, 'tools')}
           >
-            <Card className="w-64 bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none">
+            <Card className="w-full h-full bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none relative flex flex-col">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg text-emerald-400" style={{ textShadow: '0 0 8px rgba(52, 211, 153, 0.8), 0 0 16px rgba(52, 211, 153, 0.6), 0 0 24px rgba(52, 211, 153, 0.4)' }}>Tools to Use to Build</CardTitle>
@@ -359,7 +422,7 @@ const ProjectView = () => {
                 </div>
                 <p className="text-xs text-zinc-500">Development stack and tools</p>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-3 flex-1 overflow-auto">
                 <div className="space-y-2">
                   <div className="text-sm font-medium text-zinc-200">React + TypeScript</div>
                   <p className="text-xs text-zinc-500">
@@ -388,6 +451,11 @@ const ProjectView = () => {
                   + Add Tool
                 </Button>
               </CardContent>
+              <div 
+                className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize bg-zinc-700 hover:bg-zinc-600 transition-colors"
+                onMouseDown={(e) => handleResizeMouseDown(e, 'tools')}
+                style={{ borderRadius: '0 0 8px 0' }}
+              />
             </Card>
           </div>
 
@@ -395,13 +463,15 @@ const ProjectView = () => {
           <div 
             className="absolute cursor-move"
             style={{ 
-              zIndex: dragging === 'phases' ? 20 : 10,
+              zIndex: dragging === 'phases' || resizing === 'phases' ? 20 : 10,
               left: `${positions.phases.x}px`,
               top: `${positions.phases.y}px`,
+              width: `${sizes.phases.width}px`,
+              height: `${sizes.phases.height}px`,
             }}
             onMouseDown={(e) => handleMouseDown(e, 'phases')}
           >
-            <Card className="w-64 bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none">
+            <Card className="w-full h-full bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none relative flex flex-col">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg text-amber-400" style={{ textShadow: '0 0 8px rgba(251, 191, 36, 0.8), 0 0 16px rgba(251, 191, 36, 0.6), 0 0 24px rgba(251, 191, 36, 0.4)' }}>Phase Building</CardTitle>
@@ -411,7 +481,7 @@ const ProjectView = () => {
                 </div>
                 <p className="text-xs text-zinc-500">Development roadmap and milestones</p>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-3 flex-1 overflow-auto">
                 <div className="space-y-2">
                   <div className="text-sm font-medium text-zinc-200">Phase 1: Setup</div>
                   <p className="text-xs text-zinc-500">
@@ -440,6 +510,11 @@ const ProjectView = () => {
                   + Add Phase
                 </Button>
               </CardContent>
+              <div 
+                className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize bg-zinc-700 hover:bg-zinc-600 transition-colors"
+                onMouseDown={(e) => handleResizeMouseDown(e, 'phases')}
+                style={{ borderRadius: '0 0 8px 0' }}
+              />
             </Card>
           </div>
         </div>
