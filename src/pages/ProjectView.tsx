@@ -31,6 +31,8 @@ const ProjectView = () => {
   const [zoom, setZoom] = useState(1);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const [panStart, setPanStart] = useState({ x: 0, y: 0 });
 
   // Track viewport size
   useEffect(() => {
@@ -51,18 +53,33 @@ const ProjectView = () => {
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!dragging) return;
-    setPositions((prev) => ({
-      ...prev,
-      [dragging]: {
-        x: e.clientX - dragStart.x,
-        y: e.clientY - dragStart.y,
-      },
-    }));
+    if (dragging) {
+      setPositions((prev) => ({
+        ...prev,
+        [dragging]: {
+          x: e.clientX - dragStart.x,
+          y: e.clientY - dragStart.y,
+        },
+      }));
+    } else if (isPanning) {
+      setPanOffset({
+        x: panStart.x + (e.clientX - dragStart.x) / zoom,
+        y: panStart.y + (e.clientY - dragStart.y) / zoom,
+      });
+    }
   };
 
   const handleMouseUp = () => {
     setDragging(null);
+    setIsPanning(false);
+  };
+
+  const handleCanvasMouseDown = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      setIsPanning(true);
+      setDragStart({ x: e.clientX, y: e.clientY });
+      setPanStart(panOffset);
+    }
   };
 
   const handleWheel = (e: React.WheelEvent) => {
@@ -109,6 +126,8 @@ const ProjectView = () => {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onWheel={handleWheel}
+        onMouseDown={handleCanvasMouseDown}
+        style={{ cursor: isPanning ? 'grabbing' : 'grab' }}
       >
         {/* Zoom Controls */}
         <div className="absolute top-4 right-4 z-50 flex flex-col gap-2">
