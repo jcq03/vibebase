@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import Index from "./pages/Index";
+import Waitlist from "./pages/Waitlist";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Projects from "./pages/Projects";
@@ -32,6 +33,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/waitlist" element={<Waitlist />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/projects/:id" element={
             <ProtectedRoute>
