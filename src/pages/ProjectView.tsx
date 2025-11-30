@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,9 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Plus, Send, Sparkles, Github, ZoomIn, ZoomOut, X, PanelRightOpen, ArrowLeft } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const ProjectView = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const { toast } = useToast();
   const [messages, setMessages] = useState([
     {
       role: "assistant",
@@ -18,6 +22,7 @@ const ProjectView = () => {
   ]);
   const [input, setInput] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [projectName, setProjectName] = useState("Simple Note Taker");
   
   // Draggable state for each card
   const [dragging, setDragging] = useState<string | null>(null);
@@ -33,6 +38,56 @@ const ProjectView = () => {
   const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+
+  // Load project data
+  useEffect(() => {
+    const loadProject = async () => {
+      if (!id) return;
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: project, error } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error loading project:', error);
+        return;
+      }
+
+      if (project) {
+        setProjectName(project.name);
+        setPositions(project.card_positions as typeof positions);
+      }
+    };
+
+    loadProject();
+  }, [id]);
+
+  // Save positions to database with debouncing
+  useEffect(() => {
+    if (!id) return;
+
+    const savePositions = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('projects')
+        .update({ card_positions: positions })
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error saving positions:', error);
+      }
+    };
+
+    const timeoutId = setTimeout(savePositions, 1000);
+    return () => clearTimeout(timeoutId);
+  }, [positions, id]);
 
   // Track viewport size
   useEffect(() => {
@@ -381,7 +436,7 @@ const ProjectView = () => {
         <div className="w-80 border-l border-zinc-800 bg-zinc-900 flex flex-col">
           <div className="p-4 border-b border-zinc-800">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-medium text-zinc-400">Simple Note Taker</h3>
+              <h3 className="text-sm font-medium text-zinc-400">{projectName}</h3>
               <Button
                 size="icon"
                 variant="ghost"
