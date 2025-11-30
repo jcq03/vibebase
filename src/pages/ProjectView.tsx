@@ -260,7 +260,7 @@ const ProjectView = () => {
             <Card className="w-64 bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg text-cyan-400" style={{ textShadow: '0 2px 4px rgba(34, 211, 238, 0.3)' }}>Idea & Features</CardTitle>
+                  <CardTitle className="text-lg text-cyan-400" style={{ textShadow: '0 0 10px rgba(34, 211, 238, 0.6), 0 0 20px rgba(34, 211, 238, 0.4), 0 2px 4px rgba(34, 211, 238, 0.3)' }}>Idea & Features</CardTitle>
                   <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800">
                     <Plus className="h-4 w-4" />
                   </Button>
@@ -306,7 +306,7 @@ const ProjectView = () => {
             <Card className="w-64 bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg text-purple-400" style={{ textShadow: '0 2px 4px rgba(192, 132, 252, 0.3)' }}>Type of Application</CardTitle>
+                  <CardTitle className="text-lg text-purple-400" style={{ textShadow: '0 0 10px rgba(192, 132, 252, 0.6), 0 0 20px rgba(192, 132, 252, 0.4), 0 2px 4px rgba(192, 132, 252, 0.3)' }}>Type of Application</CardTitle>
                   <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800">
                     <Plus className="h-4 w-4" />
                   </Button>
@@ -352,7 +352,7 @@ const ProjectView = () => {
             <Card className="w-64 bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg text-emerald-400" style={{ textShadow: '0 2px 4px rgba(52, 211, 153, 0.3)' }}>Tools to Use to Build</CardTitle>
+                  <CardTitle className="text-lg text-emerald-400" style={{ textShadow: '0 0 10px rgba(52, 211, 153, 0.6), 0 0 20px rgba(52, 211, 153, 0.4), 0 2px 4px rgba(52, 211, 153, 0.3)' }}>Tools to Use to Build</CardTitle>
                   <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800">
                     <Plus className="h-4 w-4" />
                   </Button>
@@ -404,7 +404,7 @@ const ProjectView = () => {
             <Card className="w-64 bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg text-amber-400" style={{ textShadow: '0 2px 4px rgba(251, 191, 36, 0.3)' }}>Phase Building</CardTitle>
+                  <CardTitle className="text-lg text-amber-400" style={{ textShadow: '0 0 10px rgba(251, 191, 36, 0.6), 0 0 20px rgba(251, 191, 36, 0.4), 0 2px 4px rgba(251, 191, 36, 0.3)' }}>Phase Building</CardTitle>
                   <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800">
                     <Plus className="h-4 w-4" />
                   </Button>
