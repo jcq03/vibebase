@@ -29,10 +29,10 @@ const Dashboard = () => {
       color: "from-green-500 to-emerald-500"
     },
     {
-      title: "Build Plan",
-      description: "Visualize your development roadmap",
+      title: "Projects",
+      description: "View and manage your projects",
       icon: Map,
-      action: () => navigate("/build-plan"),
+      action: () => navigate("/projects"),
       color: "from-orange-500 to-red-500"
     },
   ];
