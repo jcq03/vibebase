@@ -306,36 +306,36 @@ const ProjectView = () => {
             }}
             onMouseDown={(e) => handleMouseDown(e, 'ideaFeatures')}
           >
-            <Card className="w-full h-full bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none relative flex flex-col">
+            <Card className="w-full h-full bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none relative flex flex-col" style={{ fontSize: `${Math.max(0.6, sizes.ideaFeatures.width / 256)}rem` }}>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg text-cyan-400" style={{ textShadow: '0 0 8px rgba(34, 211, 238, 0.8), 0 0 16px rgba(34, 211, 238, 0.6), 0 0 24px rgba(34, 211, 238, 0.4)' }}>Idea & Features</CardTitle>
-                  <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800">
-                    <Plus className="h-4 w-4" />
+                  <CardTitle className="text-lg text-cyan-400" style={{ textShadow: '0 0 8px rgba(34, 211, 238, 0.8), 0 0 16px rgba(34, 211, 238, 0.6), 0 0 24px rgba(34, 211, 238, 0.4)', fontSize: '1.125em' }}>Idea & Features</CardTitle>
+                  <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800" style={{ padding: '0.25em' }}>
+                    <Plus style={{ width: '1em', height: '1em' }} />
                   </Button>
                 </div>
-                <p className="text-xs text-zinc-500">Core concept and functionality</p>
+                <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>Core concept and functionality</p>
               </CardHeader>
               <CardContent className="space-y-3 flex-1 overflow-auto">
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200">Note Creation</div>
-                  <p className="text-xs text-zinc-500">
+                  <div className="text-sm font-medium text-zinc-200" style={{ fontSize: '0.875em' }}>Note Creation</div>
+                  <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>
                     Quick and easy note creation with rich text support
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200">Organization</div>
-                  <p className="text-xs text-zinc-500">
+                  <div className="text-sm font-medium text-zinc-200" style={{ fontSize: '0.875em' }}>Organization</div>
+                  <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>
                     Category-based organization for better management
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200">Search & Filter</div>
-                  <p className="text-xs text-zinc-500">
+                  <div className="text-sm font-medium text-zinc-200" style={{ fontSize: '0.875em' }}>Search & Filter</div>
+                  <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>
                     Find notes quickly with search and filtering options
                   </p>
                 </div>
-                <Button variant="outline" size="sm" className="w-full mt-2 border-zinc-700 text-zinc-300 hover:bg-zinc-800">
+                <Button variant="outline" size="sm" className="w-full mt-2 border-zinc-700 text-zinc-300 hover:bg-zinc-800" style={{ fontSize: '0.875em' }}>
                   + Add Feature
                 </Button>
               </CardContent>
@@ -359,36 +359,36 @@ const ProjectView = () => {
             }}
             onMouseDown={(e) => handleMouseDown(e, 'appType')}
           >
-            <Card className="w-full h-full bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none relative flex flex-col">
+            <Card className="w-full h-full bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none relative flex flex-col" style={{ fontSize: `${Math.max(0.6, sizes.appType.width / 256)}rem` }}>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg text-purple-400" style={{ textShadow: '0 0 8px rgba(192, 132, 252, 0.8), 0 0 16px rgba(192, 132, 252, 0.6), 0 0 24px rgba(192, 132, 252, 0.4)' }}>Type of Application</CardTitle>
-                  <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800">
-                    <Plus className="h-4 w-4" />
+                  <CardTitle className="text-lg text-purple-400" style={{ textShadow: '0 0 8px rgba(192, 132, 252, 0.8), 0 0 16px rgba(192, 132, 252, 0.6), 0 0 24px rgba(192, 132, 252, 0.4)', fontSize: '1.125em' }}>Type of Application</CardTitle>
+                  <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800" style={{ padding: '0.25em' }}>
+                    <Plus style={{ width: '1em', height: '1em' }} />
                   </Button>
                 </div>
-                <p className="text-xs text-zinc-500">Application category and scope</p>
+                <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>Application category and scope</p>
               </CardHeader>
               <CardContent className="space-y-3 flex-1 overflow-auto">
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200">Web Application</div>
-                  <p className="text-xs text-zinc-500">
+                  <div className="text-sm font-medium text-zinc-200" style={{ fontSize: '0.875em' }}>Web Application</div>
+                  <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>
                     Browser-based app accessible on any device
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200">Productivity Tool</div>
-                  <p className="text-xs text-zinc-500">
+                  <div className="text-sm font-medium text-zinc-200" style={{ fontSize: '0.875em' }}>Productivity Tool</div>
+                  <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>
                     Designed to help users organize and manage information
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200">Single User</div>
-                  <p className="text-xs text-zinc-500">
+                  <div className="text-sm font-medium text-zinc-200" style={{ fontSize: '0.875em' }}>Single User</div>
+                  <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>
                     Personal note-taking without collaboration features
                   </p>
                 </div>
-                <Button variant="outline" size="sm" className="w-full mt-2 border-zinc-700 text-zinc-300 hover:bg-zinc-800">
+                <Button variant="outline" size="sm" className="w-full mt-2 border-zinc-700 text-zinc-300 hover:bg-zinc-800" style={{ fontSize: '0.875em' }}>
                   + Add Detail
                 </Button>
               </CardContent>
@@ -412,42 +412,42 @@ const ProjectView = () => {
             }}
             onMouseDown={(e) => handleMouseDown(e, 'tools')}
           >
-            <Card className="w-full h-full bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none relative flex flex-col">
+            <Card className="w-full h-full bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none relative flex flex-col" style={{ fontSize: `${Math.max(0.6, sizes.tools.width / 256)}rem` }}>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg text-emerald-400" style={{ textShadow: '0 0 8px rgba(52, 211, 153, 0.8), 0 0 16px rgba(52, 211, 153, 0.6), 0 0 24px rgba(52, 211, 153, 0.4)' }}>Tools to Use to Build</CardTitle>
-                  <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800">
-                    <Plus className="h-4 w-4" />
+                  <CardTitle className="text-lg text-emerald-400" style={{ textShadow: '0 0 8px rgba(52, 211, 153, 0.8), 0 0 16px rgba(52, 211, 153, 0.6), 0 0 24px rgba(52, 211, 153, 0.4)', fontSize: '1.125em' }}>Tools to Use to Build</CardTitle>
+                  <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800" style={{ padding: '0.25em' }}>
+                    <Plus style={{ width: '1em', height: '1em' }} />
                   </Button>
                 </div>
-                <p className="text-xs text-zinc-500">Development stack and tools</p>
+                <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>Development stack and tools</p>
               </CardHeader>
               <CardContent className="space-y-3 flex-1 overflow-auto">
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200">React + TypeScript</div>
-                  <p className="text-xs text-zinc-500">
+                  <div className="text-sm font-medium text-zinc-200" style={{ fontSize: '0.875em' }}>React + TypeScript</div>
+                  <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>
                     Modern frontend framework with type safety
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200">Supabase</div>
-                  <p className="text-xs text-zinc-500">
+                  <div className="text-sm font-medium text-zinc-200" style={{ fontSize: '0.875em' }}>Supabase</div>
+                  <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>
                     Database and authentication backend
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200">Tailwind CSS</div>
-                  <p className="text-xs text-zinc-500">
+                  <div className="text-sm font-medium text-zinc-200" style={{ fontSize: '0.875em' }}>Tailwind CSS</div>
+                  <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>
                     Utility-first styling framework
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200">Vite</div>
-                  <p className="text-xs text-zinc-500">
+                  <div className="text-sm font-medium text-zinc-200" style={{ fontSize: '0.875em' }}>Vite</div>
+                  <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>
                     Fast build tool and development server
                   </p>
                 </div>
-                <Button variant="outline" size="sm" className="w-full mt-2 border-zinc-700 text-zinc-300 hover:bg-zinc-800">
+                <Button variant="outline" size="sm" className="w-full mt-2 border-zinc-700 text-zinc-300 hover:bg-zinc-800" style={{ fontSize: '0.875em' }}>
                   + Add Tool
                 </Button>
               </CardContent>
@@ -471,42 +471,42 @@ const ProjectView = () => {
             }}
             onMouseDown={(e) => handleMouseDown(e, 'phases')}
           >
-            <Card className="w-full h-full bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none relative flex flex-col">
+            <Card className="w-full h-full bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none relative flex flex-col" style={{ fontSize: `${Math.max(0.6, sizes.phases.width / 256)}rem` }}>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg text-amber-400" style={{ textShadow: '0 0 8px rgba(251, 191, 36, 0.8), 0 0 16px rgba(251, 191, 36, 0.6), 0 0 24px rgba(251, 191, 36, 0.4)' }}>Phase Building</CardTitle>
-                  <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800">
-                    <Plus className="h-4 w-4" />
+                  <CardTitle className="text-lg text-amber-400" style={{ textShadow: '0 0 8px rgba(251, 191, 36, 0.8), 0 0 16px rgba(251, 191, 36, 0.6), 0 0 24px rgba(251, 191, 36, 0.4)', fontSize: '1.125em' }}>Phase Building</CardTitle>
+                  <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800" style={{ padding: '0.25em' }}>
+                    <Plus style={{ width: '1em', height: '1em' }} />
                   </Button>
                 </div>
-                <p className="text-xs text-zinc-500">Development roadmap and milestones</p>
+                <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>Development roadmap and milestones</p>
               </CardHeader>
               <CardContent className="space-y-3 flex-1 overflow-auto">
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200">Phase 1: Setup</div>
-                  <p className="text-xs text-zinc-500">
+                  <div className="text-sm font-medium text-zinc-200" style={{ fontSize: '0.875em' }}>Phase 1: Setup</div>
+                  <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>
                     Initialize project, set up database and authentication
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200">Phase 2: Core Features</div>
-                  <p className="text-xs text-zinc-500">
+                  <div className="text-sm font-medium text-zinc-200" style={{ fontSize: '0.875em' }}>Phase 2: Core Features</div>
+                  <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>
                     Build note creation, editing, and basic organization
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200">Phase 3: Polish</div>
-                  <p className="text-xs text-zinc-500">
+                  <div className="text-sm font-medium text-zinc-200" style={{ fontSize: '0.875em' }}>Phase 3: Polish</div>
+                  <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>
                     Add search, filters, and improve user experience
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200">Phase 4: Launch</div>
-                  <p className="text-xs text-zinc-500">
+                  <div className="text-sm font-medium text-zinc-200" style={{ fontSize: '0.875em' }}>Phase 4: Launch</div>
+                  <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>
                     Testing, bug fixes, and deployment to production
                   </p>
                 </div>
-                <Button variant="outline" size="sm" className="w-full mt-2 border-zinc-700 text-zinc-300 hover:bg-zinc-800">
+                <Button variant="outline" size="sm" className="w-full mt-2 border-zinc-700 text-zinc-300 hover:bg-zinc-800" style={{ fontSize: '0.875em' }}>
                   + Add Phase
                 </Button>
               </CardContent>
