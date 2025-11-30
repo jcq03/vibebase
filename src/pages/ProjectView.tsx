@@ -39,11 +39,25 @@ const ProjectView = () => {
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
 
-  // Load project data
+  // Load project data from localStorage or database
   useEffect(() => {
     const loadProject = async () => {
       if (!id) return;
       
+      // Try to load from localStorage first
+      const savedPositions = localStorage.getItem(`project-${id}-positions`);
+      if (savedPositions) {
+        try {
+          setPositions(JSON.parse(savedPositions));
+        } catch (e) {
+          console.error('Error parsing saved positions:', e);
+        }
+      }
+
+      // Check if ID is a valid UUID (36 characters with dashes)
+      const isValidUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+      if (!isValidUuid) return;
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
@@ -67,11 +81,18 @@ const ProjectView = () => {
     loadProject();
   }, [id]);
 
-  // Save positions to database with debouncing
+  // Save positions to localStorage and database with debouncing
   useEffect(() => {
     if (!id) return;
 
     const savePositions = async () => {
+      // Always save to localStorage
+      localStorage.setItem(`project-${id}-positions`, JSON.stringify(positions));
+
+      // Check if ID is a valid UUID before trying to save to database
+      const isValidUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+      if (!isValidUuid) return;
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
