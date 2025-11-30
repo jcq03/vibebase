@@ -5,13 +5,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle2 } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { CheckCircle2, ChevronDown, Play } from "lucide-react";
 
 interface Course {
   id: string;
   title: string;
   section: string;
   description: string | null;
+  video_url: string | null;
   order_index: number;
 }
 
@@ -167,30 +169,57 @@ const Courses = () => {
                 </AccordionTrigger>
                 <AccordionContent>
                   <CardContent className="pt-6">
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       {sectionCourses.map((course) => {
                         const completed = isCourseCompleted(course.id);
                         return (
-                          <div
-                            key={course.id}
-                            className="flex items-start gap-3 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
-                          >
-                            <Checkbox
-                              checked={completed}
-                              onCheckedChange={() => toggleCourseCompletion(course.id, completed)}
-                              className="mt-1"
-                            />
-                            <div className="flex-1">
-                              <h3 className={`font-medium ${completed ? 'line-through text-muted-foreground' : ''}`}>
-                                {course.title}
-                              </h3>
-                              {course.description && (
-                                <p className="text-sm text-muted-foreground mt-1">
-                                  {course.description}
-                                </p>
-                              )}
+                          <Collapsible key={course.id}>
+                            <div className="rounded-lg border bg-card">
+                              <div className="flex items-start gap-3 p-4">
+                                <Checkbox
+                                  checked={completed}
+                                  onCheckedChange={() => toggleCourseCompletion(course.id, completed)}
+                                  className="mt-1"
+                                />
+                                <CollapsibleTrigger className="flex items-center justify-between w-full text-left group">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2">
+                                      <h3 className={`font-medium ${completed ? 'line-through text-muted-foreground' : ''}`}>
+                                        {course.title}
+                                      </h3>
+                                      {course.video_url && (
+                                        <Play className="w-4 h-4 text-primary" />
+                                      )}
+                                    </div>
+                                    {course.description && (
+                                      <p className="text-sm text-muted-foreground mt-1">
+                                        {course.description}
+                                      </p>
+                                    )}
+                                  </div>
+                                  <ChevronDown className="w-5 h-5 text-muted-foreground transition-transform group-data-[state=open]:rotate-180 ml-2 shrink-0" />
+                                </CollapsibleTrigger>
+                              </div>
+                              <CollapsibleContent>
+                                <div className="px-4 pb-4 pt-0">
+                                  {course.video_url ? (
+                                    <div className="aspect-video rounded-lg overflow-hidden bg-muted">
+                                      <iframe
+                                        src={course.video_url}
+                                        className="w-full h-full"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen
+                                      />
+                                    </div>
+                                  ) : (
+                                    <div className="aspect-video rounded-lg bg-muted flex items-center justify-center">
+                                      <p className="text-muted-foreground">No video available</p>
+                                    </div>
+                                  )}
+                                </div>
+                              </CollapsibleContent>
                             </div>
-                          </div>
+                          </Collapsible>
                         );
                       })}
                     </div>
