@@ -85,7 +85,7 @@ const ProjectView = () => {
   useEffect(() => {
     if (!id) return;
 
-    const savePositions = async () => {
+    const savePositionsNow = async () => {
       // Always save to localStorage
       localStorage.setItem(`project-${id}-positions`, JSON.stringify(positions));
 
@@ -106,7 +106,7 @@ const ProjectView = () => {
       }
     };
 
-    const timeoutId = setTimeout(savePositions, 1000);
+    const timeoutId = setTimeout(savePositionsNow, 1000);
     return () => clearTimeout(timeoutId);
   }, [positions, id]);
 
@@ -148,6 +148,11 @@ const ProjectView = () => {
   const handleMouseUp = () => {
     setDragging(null);
     setIsPanning(false);
+    // Ensure the latest position is saved immediately when the user stops dragging
+    const savedId = id;
+    if (savedId) {
+      localStorage.setItem(`project-${savedId}-positions`, JSON.stringify(positions));
+    }
   };
 
   const handleCanvasMouseDown = (e: React.MouseEvent) => {
