@@ -130,7 +130,7 @@ const ProjectView = () => {
         style={{ 
           cursor: isPanning ? 'grabbing' : 'grab',
           backgroundImage: 'radial-gradient(circle, rgba(255, 255, 255, 0.7) 1px, transparent 1px)',
-          backgroundSize: '30px 30px'
+          backgroundSize: '20px 20px'
         }}
       >
         {/* Zoom Controls */}
