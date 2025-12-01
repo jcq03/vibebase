@@ -19,7 +19,7 @@ import {
 const navItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Projects", url: "/projects", icon: FolderKanban },
-  { title: "Ideas & Features", url: "/ideas", icon: Lightbulb },
+  { title: "30+ Ready Ideas", url: "/ideas", icon: Lightbulb },
   { title: "Profile", url: "/profile", icon: User },
 ];
 
