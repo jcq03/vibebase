@@ -27,7 +27,7 @@ const academyItems = [
   { title: "Courses", url: "/courses", icon: Layers },
   { title: "Live Calls", url: "/live-calls", icon: MessageSquare },
   { title: "Community", url: "/community", icon: User },
-  { title: "Tools", url: "/tools", icon: Wrench },
+  { title: "Tech Stack", url: "/tools", icon: Wrench },
 ];
 
 export function AppSidebar() {
