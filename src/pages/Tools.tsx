@@ -1,58 +1,59 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Code, Database, Cpu, Cloud, Palette, Zap } from "lucide-react";
+import { Smartphone, Globe, Briefcase } from "lucide-react";
 
 const Tools = () => {
-  const aiTools = [
-    { name: "Lovable", description: "Full-stack AI development", icon: Zap, tag: "Recommended" },
-    { name: "Cursor", description: "AI-powered IDE", icon: Code, tag: "Popular" },
-    { name: "Replit AI", description: "Collaborative coding", icon: Cpu, tag: "Cloud-based" },
+  const mobileStack = [
+    { name: "React Native", category: "Framework" },
+    { name: "Capacitor", category: "Native Bridge" },
+    { name: "Expo", category: "Development Platform" },
+    { name: "Firebase", category: "Backend" },
+    { name: "React Navigation", category: "Routing" },
+    { name: "AsyncStorage", category: "Local Storage" },
   ];
 
-  const frontendTools = [
-    { name: "React", description: "UI library", icon: Code },
-    { name: "Next.js", description: "React framework", icon: Code },
-    { name: "Tailwind CSS", description: "Utility-first CSS", icon: Palette },
+  const saasStack = [
+    { name: "React", category: "Frontend" },
+    { name: "Next.js", category: "Framework" },
+    { name: "Tailwind CSS", category: "Styling" },
+    { name: "Supabase", category: "Backend" },
+    { name: "Stripe", category: "Payments" },
+    { name: "PostgreSQL", category: "Database" },
+    { name: "Vercel", category: "Hosting" },
+    { name: "Redis", category: "Caching" },
   ];
 
-  const backendTools = [
-    { name: "Node.js", description: "JavaScript runtime", icon: Cpu },
-    { name: "Supabase", description: "Backend as a service", icon: Cloud },
-    { name: "Express", description: "Web framework", icon: Code },
+  const webAppStack = [
+    { name: "React", category: "Frontend" },
+    { name: "Vite", category: "Build Tool" },
+    { name: "Tailwind CSS", category: "Styling" },
+    { name: "shadcn/ui", category: "Components" },
+    { name: "React Router", category: "Routing" },
+    { name: "Zustand", category: "State Management" },
   ];
 
-  const databaseTools = [
-    { name: "PostgreSQL", description: "Relational database", icon: Database },
-    { name: "MongoDB", description: "NoSQL database", icon: Database },
-    { name: "Redis", description: "In-memory cache", icon: Database },
-  ];
-
-  const ToolSection = ({ title, tools, description }: any) => (
+  const StackSection = ({ title, description, icon: Icon, stack, color }: any) => (
     <Card>
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
+        <div className="flex items-center gap-3 mb-2">
+          <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center`}>
+            <Icon className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <CardTitle className="text-2xl">{title}</CardTitle>
+            <CardDescription className="mt-1">{description}</CardDescription>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {tools.map((tool: any, index: number) => (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          {stack.map((tech: any, index: number) => (
             <div
               key={index}
-              className="p-4 border rounded-lg hover:shadow-md transition-all hover:scale-105 cursor-pointer"
+              className="p-4 border rounded-lg hover:shadow-md transition-all hover:border-primary"
             >
-              <div className="flex items-start justify-between mb-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <tool.icon className="h-5 w-5 text-primary" />
-                </div>
-                {tool.tag && (
-                  <Badge variant="secondary" className="text-xs">
-                    {tool.tag}
-                  </Badge>
-                )}
-              </div>
-              <h3 className="font-semibold mb-1">{tool.name}</h3>
-              <p className="text-sm text-muted-foreground">{tool.description}</p>
+              <h3 className="font-semibold text-sm mb-1">{tech.name}</h3>
+              <p className="text-xs text-muted-foreground">{tech.category}</p>
             </div>
           ))}
         </div>
@@ -64,54 +65,37 @@ const Tools = () => {
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Tech Stack</h1>
+          <h1 className="text-4xl font-bold mb-2">Tech Stack Recommendations</h1>
           <p className="text-muted-foreground text-lg">
-            AI-recommended tools for your project
+            Curated technology stacks for different app types
           </p>
         </div>
 
         <div className="space-y-6">
-          <ToolSection 
-            title="AI Development Tools"
-            description="Accelerate development with AI assistance"
-            tools={aiTools}
+          <StackSection 
+            title="Mobile App Tech Stack"
+            description="Build cross-platform mobile applications"
+            icon={Smartphone}
+            color="from-blue-500 to-cyan-500"
+            stack={mobileStack}
           />
           
-          <ToolSection 
-            title="Frontend Technologies"
-            description="Build beautiful user interfaces"
-            tools={frontendTools}
+          <StackSection 
+            title="SaaS Tech Stack"
+            description="Create scalable software-as-a-service platforms"
+            icon={Briefcase}
+            color="from-purple-500 to-pink-500"
+            stack={saasStack}
           />
           
-          <ToolSection 
-            title="Backend Technologies"
-            description="Power your application logic"
-            tools={backendTools}
-          />
-          
-          <ToolSection 
-            title="Database Options"
-            description="Store and manage your data"
-            tools={databaseTools}
+          <StackSection 
+            title="Web App Tech Stack"
+            description="Develop responsive web applications"
+            icon={Globe}
+            color="from-green-500 to-emerald-500"
+            stack={webAppStack}
           />
         </div>
-
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Recommended Stack</CardTitle>
-            <CardDescription>Based on your project requirements</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="default">Lovable</Badge>
-              <Badge variant="default">React</Badge>
-              <Badge variant="default">Tailwind CSS</Badge>
-              <Badge variant="default">Supabase</Badge>
-              <Badge variant="default">PostgreSQL</Badge>
-            </div>
-            <Button className="mt-4">Apply This Stack</Button>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
