@@ -143,6 +143,8 @@ export type Database = {
         Row: {
           card_positions: Json
           created_at: string
+          description: string | null
+          features: string | null
           id: string
           name: string
           updated_at: string
@@ -151,6 +153,8 @@ export type Database = {
         Insert: {
           card_positions?: Json
           created_at?: string
+          description?: string | null
+          features?: string | null
           id?: string
           name: string
           updated_at?: string
@@ -159,6 +163,8 @@ export type Database = {
         Update: {
           card_positions?: Json
           created_at?: string
+          description?: string | null
+          features?: string | null
           id?: string
           name?: string
           updated_at?: string
