@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,33 +7,95 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, FolderKanban, Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Projects = () => {
   const navigate = useNavigate();
-  const [projects, setProjects] = useState([
-    {
-      id: "1",
-      name: "Simple Note Taker",
-      description: "An innovative project that builds a simple note taker app with rich text features",
-      createdAt: "2024-11-20",
-    },
-  ]);
+  const { toast } = useToast();
+  const [projects, setProjects] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
-  const [newProject, setNewProject] = useState({ name: "", description: "" });
+  const [isLoading, setIsLoading] = useState(false);
+  const [newProject, setNewProject] = useState({ name: "", description: "", features: "" });
 
-  const handleCreateProject = () => {
-    if (newProject.name.trim()) {
-      const project = {
-        id: Date.now().toString(),
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const fetchProjects = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load projects",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setProjects(data || []);
+  };
+
+  const handleCreateProject = async () => {
+    if (!newProject.name.trim()) {
+      toast({
+        title: "Error",
+        description: "Project name is required",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to create a project",
+        variant: "destructive"
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('projects')
+      .insert({
         name: newProject.name,
         description: newProject.description,
-        createdAt: new Date().toISOString().split("T")[0],
-      };
-      setProjects([...projects, project]);
-      setNewProject({ name: "", description: "" });
-      setOpen(false);
-      navigate(`/projects/${project.id}`);
+        features: newProject.features,
+        user_id: user.id
+      })
+      .select()
+      .single();
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create project",
+        variant: "destructive"
+      });
+      setIsLoading(false);
+      return;
     }
+
+    toast({
+      title: "Success",
+      description: "Project created successfully"
+    });
+
+    setNewProject({ name: "", description: "", features: "" });
+    setOpen(false);
+    setIsLoading(false);
+    navigate(`/projects/${data.id}`);
   };
 
   return (
@@ -72,17 +134,27 @@ const Projects = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
+                  <Label htmlFor="description">Project Description</Label>
                   <Textarea
                     id="description"
                     placeholder="Brief description of your app idea..."
                     value={newProject.description}
                     onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
-                    rows={4}
+                    rows={3}
                   />
                 </div>
-                <Button onClick={handleCreateProject} className="w-full">
-                  Create Project
+                <div className="space-y-2">
+                  <Label htmlFor="features">Project Features</Label>
+                  <Textarea
+                    id="features"
+                    placeholder="List the key features you want to include..."
+                    value={newProject.features}
+                    onChange={(e) => setNewProject({ ...newProject, features: e.target.value })}
+                    rows={3}
+                  />
+                </div>
+                <Button onClick={handleCreateProject} className="w-full" disabled={isLoading}>
+                  {isLoading ? "Creating..." : "Create Project"}
                 </Button>
               </div>
             </DialogContent>
@@ -110,7 +182,7 @@ const Projects = () => {
               <CardContent>
                 <div className="flex items-center text-sm text-muted-foreground">
                   <Calendar className="h-4 w-4 mr-2" />
-                  Created {project.createdAt}
+                  Created {new Date(project.created_at).toLocaleDateString()}
                 </div>
               </CardContent>
             </Card>
