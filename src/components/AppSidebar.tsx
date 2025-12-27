@@ -1,4 +1,4 @@
-import { Home, Lightbulb, Layers, Wrench, Map, MessageSquare, User, FolderKanban, LogOut } from "lucide-react";
+import { Home, Lightbulb, Layers, Wrench, MessageSquare, User, FolderKanban, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { NavLink } from "@/components/NavLink";
@@ -55,10 +55,12 @@ export function AppSidebar() {
   return (
     <Sidebar className={open ? "w-64" : "w-14"}>
       <SidebarContent className="pt-8">
-        <div className={`px-6 mb-6 ${open ? "block" : "hidden"}`}>
-          <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            CodeVibez
-          </h1>
+        <div className={`px-4 mb-6 ${open ? "block" : "hidden"}`}>
+          <img 
+            src="https://znvstbggiqsecovmtfzx.supabase.co/storage/v1/object/sign/images/vibebase%20logo%20(1).png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV83MDYwNDQ0Yy01ZTQzLTQ5ZDgtYTYxZi05OTA2OGE5Y2RmZmQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJpbWFnZXMvdmliZWJhc2UgbG9nbyAoMSkucG5nIiwiaWF0IjoxNzY2NzQzMjI0LCJleHAiOjE3OTgyNzkyMjR9.t0B51Uxpu2VTwaraXDH-bv0nK3_YTZIF1PZoYCnc9sA"
+            alt="Vibebase Logo"
+            className="h-16 w-auto"
+          />
         </div>
         
         <SidebarGroup>

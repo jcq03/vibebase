@@ -1,47 +1,219 @@
+import type React from "react";
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Plus, Send, Sparkles, Github, ZoomIn, ZoomOut, X, PanelRightOpen, ArrowLeft } from "lucide-react";
+import { Plus, ZoomIn, ZoomOut, X, PanelRightOpen, ArrowLeft, Pencil, Check, StickyNote, Trash2 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { techStacks, getRecommendedTools } from "@/data/techStack";
+
+// Helper function to get emoji for tool category
+const getCategoryIcon = (category: string): string => {
+  switch (category.toLowerCase()) {
+    case 'build & code': return '🖥️';
+    case 'build': return '💜';
+    case 'backend': return '🗄️';
+    case 'paywall': return '💳';
+    case 'hosting': return '▲';
+    case 'domain': return '🌐';
+    default: return '⚡';
+  }
+};
+
+// AI Content Generation based on project idea
+interface AIContent {
+  overview: {
+    problemStatement: string;
+    targetAudience: string;
+    uniqueValue: string;
+  };
+  features: Array<{ name: string; description: string; priority: 'Essential' | 'Core' | 'Recommended' }>;
+  appType: {
+    recommended: string;
+    reasons: string[];
+    alternatives: Array<{ name: string; description: string }>;
+  };
+  tools: Array<{ name: string; description: string; recommended: boolean }>;
+  backend: Array<{ name: string; description: string; priority: 'Required' | 'Recommended' | 'Optional' }>;
+  phases: Array<{ name: string; week: string; tasks: string[] }>;
+}
+
+const generateAIContent = (name: string, description: string, features: string): AIContent => {
+  const featureList = features.split(/[,\n]/).map(f => f.trim()).filter(f => f.length > 0);
+  const hasAuth = featureList.some(f => f.toLowerCase().includes('auth') || f.toLowerCase().includes('login') || f.toLowerCase().includes('user'));
+  const hasImages = featureList.some(f => f.toLowerCase().includes('image') || f.toLowerCase().includes('photo') || f.toLowerCase().includes('upload'));
+  const hasPayments = featureList.some(f => f.toLowerCase().includes('payment') || f.toLowerCase().includes('stripe') || f.toLowerCase().includes('subscription'));
+  const hasSocial = featureList.some(f => f.toLowerCase().includes('social') || f.toLowerCase().includes('share') || f.toLowerCase().includes('community'));
+  const hasRealtime = featureList.some(f => f.toLowerCase().includes('real-time') || f.toLowerCase().includes('chat') || f.toLowerCase().includes('live'));
+  
+  // Determine app type from features/description
+  const isMobile = featureList.some(f => f.toLowerCase().includes('mobile') || f.toLowerCase().includes('ios') || f.toLowerCase().includes('android')) 
+    || description.toLowerCase().includes('mobile') || description.toLowerCase().includes('app store');
+  const isSaas = featureList.some(f => f.toLowerCase().includes('saas') || f.toLowerCase().includes('subscription') || f.toLowerCase().includes('multi-tenant'))
+    || description.toLowerCase().includes('saas') || hasPayments;
+  
+  // Get the appropriate tech stack
+  const appTypeKey = isMobile ? 'mobile' : isSaas ? 'saas' : 'web';
+  const recommendedStack = techStacks[appTypeKey];
+  const recommendedAppType = isMobile ? 'Mobile App' : isSaas ? 'SaaS Application' : 'Web Application';
+
+  return {
+    overview: {
+      problemStatement: description || `${name} solves a key problem for users by providing an intuitive solution`,
+      targetAudience: `Users who need ${name.toLowerCase()} functionality for personal or professional use`,
+      uniqueValue: `Simple, fast, and AI-powered ${name.toLowerCase()} experience`,
+    },
+    features: [
+      ...(hasAuth ? [{ name: '🔐 User Authentication', description: 'Sign up, login, password reset, and session management', priority: 'Essential' as const }] : []),
+      { name: '📊 Dashboard', description: `Main interface for ${name.toLowerCase()} with key data and actions`, priority: 'Essential' as const },
+      ...featureList.slice(0, 3).map((f, i) => ({ 
+        name: `📝 ${f}`, 
+        description: `Core functionality for ${f.toLowerCase()}`, 
+        priority: (i === 0 ? 'Essential' : 'Core') as 'Essential' | 'Core' 
+      })),
+      { name: '🔍 Search & Filters', description: 'Find content quickly with search functionality', priority: 'Recommended' as const },
+      { name: '📱 Responsive Design', description: 'Works seamlessly on mobile, tablet, and desktop', priority: 'Recommended' as const },
+    ],
+    appType: {
+      recommended: recommendedAppType,
+      reasons: isMobile ? [
+        'Native app experience with offline capabilities',
+        'Access to device features (camera, GPS, notifications)',
+        'App store distribution for wider reach',
+        'Better performance for complex interactions',
+      ] : isSaas ? [
+        'Recurring revenue with subscription model',
+        'Multi-tenant architecture for scalability',
+        'Easier to update and maintain centrally',
+        'Cross-platform access via web browser',
+      ] : [
+        'Cross-platform - works on any device with a browser',
+        'No app store approval needed - deploy instantly',
+        'Easier to update and maintain',
+        hasRealtime ? 'Supports real-time features natively' : 'Lower development cost than native apps',
+      ],
+      alternatives: isMobile ? [
+        { name: '🌐 Web Application', description: 'If you want faster development and no app store' },
+        { name: '🌐 PWA (Progressive Web App)', description: 'Web app with installable mobile experience' },
+        { name: '💼 SaaS', description: 'If you want subscription-based monetization' },
+      ] : isSaas ? [
+        { name: '📱 Mobile App', description: 'If you need native app store presence' },
+        { name: '🌐 Web Application', description: 'Simpler web app without SaaS features' },
+        { name: '🖥️ Desktop App', description: 'For power users needing local access' },
+      ] : [
+        { name: '📱 Mobile App (React Native)', description: 'If you need offline access or native features' },
+        { name: '🖥️ Desktop App (Electron)', description: 'For power users needing local file access' },
+        { name: '🌐 PWA (Progressive Web App)', description: 'Web app that can be installed like a native app' },
+      ],
+    },
+    // Use tools from the shared tech stack based on app type
+    tools: recommendedStack.tools.map((tool, index) => ({
+      name: getCategoryIcon(tool.category) + ' ' + tool.name,
+      description: tool.description,
+      recommended: index < 2, // First two tools are recommended
+    })),
+    backend: [
+      { name: '🔐 Authentication', description: hasAuth ? 'User sign-up, login, password reset required for your app' : 'Optional user accounts for personalization', priority: hasAuth ? 'Required' : 'Optional' },
+      { name: '🗄️ Database', description: `Store ${name.toLowerCase()} data, user preferences, and settings`, priority: 'Required' as const },
+      { name: '📁 File Storage', description: hasImages ? 'Store images and file uploads from users' : 'Optional file/image storage', priority: hasImages ? 'Required' : 'Optional' },
+      { name: '🔒 Row Level Security', description: 'Ensure users can only access their own data', priority: 'Recommended' as const },
+      { name: '💳 Payments', description: hasPayments ? 'Stripe integration for subscriptions/payments' : 'Add monetization later', priority: hasPayments ? 'Required' : 'Optional' },
+      { name: '📧 Email', description: 'Welcome emails, notifications, password reset', priority: 'Optional' as const },
+    ],
+    phases: [
+      { name: 'Project Setup', week: 'Week 1', tasks: [
+        `Create ${name} project in Loveable/Bolt`,
+        'Set up Supabase backend',
+        hasAuth ? 'Configure authentication' : 'Set up basic structure',
+        'Connect to GitHub for version control',
+      ]},
+      { name: 'Core Features', week: 'Week 2-3', tasks: [
+        'Build main dashboard layout',
+        ...featureList.slice(0, 2).map(f => `Implement ${f}`),
+        'Add form validation and error handling',
+      ]},
+      { name: 'Polish & UX', week: 'Week 4', tasks: [
+        'Add search and filter functionality',
+        'Improve responsive design',
+        'Add loading states and animations',
+        'Optimize performance',
+      ]},
+      { name: 'Launch', week: 'Week 5', tasks: [
+        'Test all features thoroughly',
+        'Fix bugs and edge cases',
+        'Deploy to Vercel/Netlify',
+        'Set up custom domain',
+      ]},
+    ],
+  };
+};
 
 const ProjectView = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { toast } = useToast();
-  const [messages, setMessages] = useState([
-    {
-      role: "assistant",
-      content: "Hi! How can I help you organise the project workflow today?",
-    },
-  ]);
-  const [input, setInput] = useState("");
+  
+  const [projectDescription, setProjectDescription] = useState("");
+  const [projectFeatures, setProjectFeatures] = useState("");
+  const [aiContent, setAiContent] = useState<AIContent | null>(null);
+  const [generatedPrompt, setGeneratedPrompt] = useState("");
+  const [promptCopied, setPromptCopied] = useState(false);
+  
+  const [todos, setTodos] = useState<Array<{ id: number; phase: number; text: string; completed: boolean }>>([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [projectName, setProjectName] = useState("Simple Note Taker");
+  const [projectName, setProjectName] = useState("New Project");
+  
+  // Inline editing state
+  const [editingCard, setEditingCard] = useState<CardKey | null>(null);
+  const [editFormData, setEditFormData] = useState<any>({});
   
   // Draggable state for each card
-  const [dragging, setDragging] = useState<string | null>(null);
-  const [resizing, setResizing] = useState<string | null>(null);
-  const [positions, setPositions] = useState({
-    ideaFeatures: { x: 16, y: 100 },
-    appType: { x: 300, y: 100 },
-    tools: { x: 584, y: 100 },
-    phases: { x: 868, y: 100 },
+  type CardKey = "central" | "ideaFeatures" | "appType" | "tools" | "phases" | "backend" | "courses" | "prompt";
+
+  // Note cards state
+  interface NoteCard {
+    id: string;
+    parentCard: CardKey;
+    content: string;
+    x: number;
+    y: number;
+  }
+  const [notes, setNotes] = useState<NoteCard[]>([]);
+  const [draggingNote, setDraggingNote] = useState<string | null>(null);
+  const [editingNote, setEditingNote] = useState<string | null>(null);
+
+  const [dragging, setDragging] = useState<CardKey | null>(null);
+  const [resizing, setResizing] = useState<CardKey | null>(null);
+  const [positions, setPositions] = useState<Record<CardKey, { x: number; y: number }>>({
+    // Pipeline Layout - 4 cards per row, left to right flow with generous spacing
+    // Row 1: Cards 1-4 (spacing: 560px between cards)
+    central: { x: 80, y: 80 },           // 1. Project Overview
+    ideaFeatures: { x: 640, y: 80 },     // 2. Ideas & Features
+    appType: { x: 1200, y: 80 },         // 3. Type of Application
+    tools: { x: 1760, y: 80 },           // 4. Tech Stack & Tools
+    // Row 2: Cards 5-8 (vertical gap: 620px)
+    backend: { x: 80, y: 700 },          // 5. Backend Features
+    phases: { x: 640, y: 700 },          // 6. Phase Building / Roadmap
+    courses: { x: 1200, y: 700 },        // 7. Course Videos
+    prompt: { x: 1760, y: 700 },         // 8. Cursor Prompt
   });
-  const [sizes, setSizes] = useState({
-    ideaFeatures: { width: 256, height: 400 },
-    appType: { width: 256, height: 400 },
-    tools: { width: 256, height: 400 },
-    phases: { width: 256, height: 400 },
+  const [sizes, setSizes] = useState<Record<CardKey, { width: number; height: number }>>({
+    central: { width: 440, height: 480 },
+    ideaFeatures: { width: 440, height: 480 },
+    appType: { width: 440, height: 480 },
+    tools: { width: 440, height: 480 },
+    backend: { width: 440, height: 480 },
+    phases: { width: 440, height: 480 },
+    courses: { width: 440, height: 480 },
+    prompt: { width: 440, height: 480 },
   });
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [resizeStart, setResizeStart] = useState({ width: 0, height: 0 });
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState(0.5);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
   const [isPanning, setIsPanning] = useState(false);
@@ -55,18 +227,29 @@ const ProjectView = () => {
       // Try to load from localStorage first
       const savedPositions = localStorage.getItem(`project-${id}-positions`);
       const savedSizes = localStorage.getItem(`project-${id}-sizes`);
+      const savedNotes = localStorage.getItem(`project-${id}-notes`);
       if (savedPositions) {
         try {
-          setPositions(JSON.parse(savedPositions));
+          const parsed = JSON.parse(savedPositions) as Partial<typeof positions>;
+          setPositions((prev) => ({ ...prev, ...parsed }));
         } catch (e) {
-          console.error('Error parsing saved positions:', e);
+          console.error("Error parsing saved positions:", e);
         }
       }
       if (savedSizes) {
         try {
-          setSizes(JSON.parse(savedSizes));
+          const parsed = JSON.parse(savedSizes) as Partial<typeof sizes>;
+          setSizes((prev) => ({ ...prev, ...parsed }));
         } catch (e) {
-          console.error('Error parsing saved sizes:', e);
+          console.error("Error parsing saved sizes:", e);
+        }
+      }
+      if (savedNotes) {
+        try {
+          const parsed = JSON.parse(savedNotes) as NoteCard[];
+          setNotes(parsed);
+        } catch (e) {
+          console.error("Error parsing saved notes:", e);
         }
       }
 
@@ -90,14 +273,74 @@ const ProjectView = () => {
 
       if (project) {
         setProjectName(project.name);
-        const cardData = project.card_positions as any;
-        if (cardData.positions) {
-          setPositions(cardData.positions);
+        setProjectDescription(project.description || '');
+        setProjectFeatures(project.features || '');
+        
+        // Load AI content from database if exists, otherwise generate it
+        const savedAiContent = project.ai_content as AIContent | null;
+        let contentToUse: AIContent;
+        
+        if (savedAiContent && savedAiContent.overview) {
+          // Use saved AI content from database
+          contentToUse = savedAiContent;
         } else {
-          setPositions(cardData as typeof positions);
+          // Generate new AI content based on project data
+          contentToUse = generateAIContent(
+            project.name,
+            project.description || '',
+            project.features || ''
+          );
         }
-        if (cardData.sizes) {
-          setSizes(cardData.sizes);
+        setAiContent(contentToUse);
+        
+        // Load notes from database if exists
+        const savedNotes = project.notes as NoteCard[] | null;
+        if (savedNotes && Array.isArray(savedNotes)) {
+          setNotes(savedNotes);
+        }
+        
+        // Generate dynamic todos based on AI content
+        const dynamicTodos = [
+          { id: 1, phase: 1, text: "Define problem statement", completed: false },
+          { id: 2, phase: 1, text: "Identify target audience", completed: false },
+          { id: 3, phase: 1, text: "Document unique value proposition", completed: false },
+          ...contentToUse.features.slice(0, 3).map((f, i) => ({
+            id: 4 + i,
+            phase: 2,
+            text: `Implement ${f.name.replace(/^[^\s]+\s/, '')}`,
+            completed: false,
+          })),
+          { id: 7, phase: 3, text: `Build as ${contentToUse.appType.recommended}`, completed: false },
+          { id: 8, phase: 3, text: "Document platform decision", completed: false },
+          { id: 9, phase: 4, text: "Choose AI tool (Loveable/Bolt)", completed: false },
+          { id: 10, phase: 4, text: "Set up Cursor for editing", completed: false },
+          { id: 11, phase: 4, text: "Configure Supabase backend", completed: false },
+          ...contentToUse.backend.filter(b => b.priority === 'Required').map((b, i) => ({
+            id: 12 + i,
+            phase: 5,
+            text: `Set up ${b.name.replace(/^[^\s]+\s/, '')}`,
+            completed: false,
+          })),
+          ...contentToUse.phases.map((p, i) => ({
+            id: 15 + i,
+            phase: 6,
+            text: `Complete ${p.name}`,
+            completed: false,
+          })),
+        ];
+        setTodos(dynamicTodos);
+        
+        // Load card positions and sizes
+        const cardData = project.card_positions as any;
+        if (cardData) {
+          if (cardData.positions) {
+            setPositions((prev) => ({ ...prev, ...(cardData.positions as Partial<typeof positions>) }));
+          } else {
+            setPositions((prev) => ({ ...prev, ...(cardData as Partial<typeof positions>) }));
+          }
+          if (cardData.sizes) {
+            setSizes((prev) => ({ ...prev, ...(cardData.sizes as Partial<typeof sizes>) }));
+          }
         }
       }
     };
@@ -123,7 +366,11 @@ const ProjectView = () => {
 
       const { error } = await supabase
         .from('projects')
-        .update({ card_positions: { positions, sizes } })
+        .update({ 
+          card_positions: { positions, sizes },
+          notes: notes,
+          ai_content: aiContent 
+        })
         .eq('id', id);
 
       if (error) {
@@ -133,7 +380,7 @@ const ProjectView = () => {
 
     const timeoutId = setTimeout(saveData, 1000);
     return () => clearTimeout(timeoutId);
-  }, [positions, sizes, id]);
+  }, [positions, sizes, notes, aiContent, id]);
 
   // Track viewport size
   useEffect(() => {
@@ -145,7 +392,7 @@ const ProjectView = () => {
     return () => window.removeEventListener('resize', updateSize);
   }, []);
 
-  const handleMouseDown = (e: React.MouseEvent, card: string) => {
+  const handleMouseDown = (e: React.MouseEvent, card: CardKey) => {
     setDragging(card);
     setDragStart({
       x: e.clientX - positions[card as keyof typeof positions].x,
@@ -153,7 +400,7 @@ const ProjectView = () => {
     });
   };
 
-  const handleResizeMouseDown = (e: React.MouseEvent, card: string) => {
+  const handleResizeMouseDown = (e: React.MouseEvent, card: CardKey) => {
     e.stopPropagation();
     setResizing(card);
     setDragStart({ x: e.clientX, y: e.clientY });
@@ -182,6 +429,13 @@ const ProjectView = () => {
           height: Math.max(200, resizeStart.height + deltaY),
         },
       }));
+    } else if (draggingNote) {
+      // Handle note dragging
+      const newX = (e.clientX - dragStart.x) / zoom;
+      const newY = (e.clientY - dragStart.y) / zoom;
+      setNotes(prevNotes => prevNotes.map(n => 
+        n.id === draggingNote ? { ...n, x: newX, y: newY } : n
+      ));
     } else if (isPanning) {
       setPanOffset({
         x: panStart.x + (e.clientX - dragStart.x) / zoom,
@@ -193,17 +447,22 @@ const ProjectView = () => {
   const handleMouseUp = () => {
     setDragging(null);
     setResizing(null);
+    setDraggingNote(null);
     setIsPanning(false);
     // Ensure the latest position and size are saved immediately
     const savedId = id;
     if (savedId) {
       localStorage.setItem(`project-${savedId}-positions`, JSON.stringify(positions));
       localStorage.setItem(`project-${savedId}-sizes`, JSON.stringify(sizes));
+      localStorage.setItem(`project-${savedId}-notes`, JSON.stringify(notes));
     }
   };
 
   const handleCanvasMouseDown = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
+    // Only start panning if clicking on the background, not on a card
+    const target = e.target as HTMLElement;
+    const isCard = target.closest('[data-card]');
+    if (!isCard) {
       setIsPanning(true);
       setDragStart({ x: e.clientX, y: e.clientY });
       setPanStart(panOffset);
@@ -212,37 +471,354 @@ const ProjectView = () => {
 
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
-    const delta = e.deltaY * -0.001;
-    const newZoom = Math.min(Math.max(0.3, zoom + delta), 2);
+    const delta = e.deltaY * -0.0015;
+    const newZoom = Math.min(Math.max(0.25, zoom + delta), 2.4);
     setZoom(newZoom);
   };
 
   const handleZoomIn = () => {
-    setZoom((prev) => Math.min(prev + 0.1, 2));
+    setZoom((prev) => Math.min(prev + 0.1, 2.4));
   };
 
   const handleZoomOut = () => {
-    setZoom((prev) => Math.max(prev - 0.1, 0.3));
+    setZoom((prev) => Math.max(prev - 0.1, 0.25));
   };
 
   const handleResetZoom = () => {
-    setZoom(1);
+    setZoom(0.75);
+    setPanOffset({ x: 0, y: 0 });
   };
 
-  const handleSend = () => {
-    if (input.trim()) {
-      setMessages([...messages, { role: "user", content: input }]);
-      setInput("");
+  // Generate curved SVG path between two cards
+  const getCurvedPath = (from: CardKey, to: CardKey) => {
+    const fromPos = positions[from];
+    const toPos = positions[to];
+    const fromSize = sizes[from];
+    const toSize = sizes[to];
+
+    // Calculate edge points (exit from right side of 'from', enter left side of 'to')
+    const isVertical = Math.abs(toPos.y - fromPos.y) > Math.abs(toPos.x - fromPos.x);
+    
+    let x1: number, y1: number, x2: number, y2: number;
+    
+    if (isVertical) {
+      // Vertical connection (going down)
+      x1 = fromPos.x + fromSize.width / 2;
+      y1 = fromPos.y + fromSize.height;
+      x2 = toPos.x + toSize.width / 2;
+      y2 = toPos.y;
+    } else {
+      // Horizontal connection (going right)
+      x1 = fromPos.x + fromSize.width;
+      y1 = fromPos.y + fromSize.height / 2;
+      x2 = toPos.x;
+      y2 = toPos.y + toSize.height / 2;
+    }
+
+    // Create a curved bezier path
+    const midX = (x1 + x2) / 2;
+    const midY = (y1 + y2) / 2;
+    
+    // Control points for smooth curve
+    const curveOffset = isVertical ? 80 : 60;
+    const cx1 = isVertical ? x1 : midX;
+    const cy1 = isVertical ? y1 + curveOffset : y1;
+    const cx2 = isVertical ? x2 : midX;
+    const cy2 = isVertical ? y2 - curveOffset : y2;
+
+    return `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}`;
+  };
+
+  // Render a curved connector line
+  const CurvedConnector = ({ from, to }: { from: CardKey; to: CardKey }) => (
+    <path
+      d={getCurvedPath(from, to)}
+      fill="none"
+      stroke="rgba(255, 255, 255, 0.8)"
+      strokeWidth="4"
+      strokeDasharray="16 10"
+      strokeLinecap="round"
+    />
+  );
+
+  const zoomLabel = `${Math.round(zoom * 100)}%`;
+
+  // Toggle inline editing for a specific card
+  const toggleEditCard = (cardKey: CardKey) => {
+    if (editingCard === cardKey) {
+      // Already editing, cancel
+      setEditingCard(null);
+      setEditFormData({});
+    } else {
+      // Start editing - prepare form data
+      setEditingCard(cardKey);
+      
+      if (cardKey === 'central' && aiContent) {
+        setEditFormData({
+          problemStatement: aiContent.overview.problemStatement,
+          targetAudience: aiContent.overview.targetAudience,
+          uniqueValue: aiContent.overview.uniqueValue,
+        });
+      } else if (cardKey === 'ideaFeatures' && aiContent) {
+        setEditFormData({
+          features: aiContent.features.map(f => `${f.name}: ${f.description}`).join('\n'),
+        });
+      } else if (cardKey === 'appType' && aiContent) {
+        setEditFormData({
+          recommended: aiContent.appType.recommended,
+          reasons: aiContent.appType.reasons.join('\n'),
+        });
+      } else if (cardKey === 'tools' && aiContent) {
+        setEditFormData({
+          tools: aiContent.tools.map(t => `${t.name}: ${t.description}`).join('\n'),
+        });
+      } else if (cardKey === 'backend' && aiContent) {
+        setEditFormData({
+          backend: aiContent.backend.map(b => `${b.name} (${b.priority}): ${b.description}`).join('\n'),
+        });
+      } else if (cardKey === 'phases' && aiContent) {
+        setEditFormData({
+          phases: aiContent.phases.map(p => `${p.name} (${p.week}):\n${p.tasks.map(t => `- ${t}`).join('\n')}`).join('\n\n'),
+        });
+      } else if (cardKey === 'courses') {
+        setEditFormData({
+          courses: 'Add your course notes here...',
+        });
+      }
+    }
+  };
+
+  // Save inline edits
+  const saveCardEdits = (cardKey: CardKey) => {
+    if (!aiContent) return;
+
+    const updatedContent = { ...aiContent };
+
+    if (cardKey === 'central') {
+      updatedContent.overview = {
+        problemStatement: editFormData.problemStatement || '',
+        targetAudience: editFormData.targetAudience || '',
+        uniqueValue: editFormData.uniqueValue || '',
+      };
+    } else if (cardKey === 'ideaFeatures') {
+      const featureLines = (editFormData.features || '').split('\n').filter((l: string) => l.trim());
+      updatedContent.features = featureLines.map((line: string) => {
+        const [name, ...descParts] = line.split(':');
+        return {
+          name: name.trim(),
+          description: descParts.join(':').trim(),
+          priority: 'Core' as const,
+        };
+      });
+    } else if (cardKey === 'appType') {
+      updatedContent.appType = {
+        ...updatedContent.appType,
+        recommended: editFormData.recommended || '',
+        reasons: (editFormData.reasons || '').split('\n').filter((l: string) => l.trim()),
+      };
+    } else if (cardKey === 'tools') {
+      const toolLines = (editFormData.tools || '').split('\n').filter((l: string) => l.trim());
+      updatedContent.tools = toolLines.map((line: string, i: number) => {
+        const [name, ...descParts] = line.split(':');
+        return {
+          name: name.trim(),
+          description: descParts.join(':').trim(),
+          recommended: i < 2,
+        };
+      });
+    } else if (cardKey === 'backend') {
+      const backendLines = (editFormData.backend || '').split('\n').filter((l: string) => l.trim());
+      updatedContent.backend = backendLines.map((line: string) => {
+        const match = line.match(/^(.+?)\s*\((\w+)\):\s*(.+)$/);
+        if (match) {
+          return {
+            name: match[1].trim(),
+            priority: match[2] as 'Required' | 'Recommended' | 'Optional',
+            description: match[3].trim(),
+          };
+        }
+        return { name: line, description: '', priority: 'Optional' as const };
+      });
+    } else if (cardKey === 'phases') {
+      const phaseBlocks = (editFormData.phases || '').split('\n\n').filter((b: string) => b.trim());
+      updatedContent.phases = phaseBlocks.map((block: string) => {
+        const lines = block.split('\n');
+        const headerMatch = lines[0]?.match(/^(.+?)\s*\((.+?)\):/);
+        const tasks = lines.slice(1).map((l: string) => l.replace(/^-\s*/, '').trim()).filter((t: string) => t);
+        return {
+          name: headerMatch?.[1]?.trim() || 'Phase',
+          week: headerMatch?.[2]?.trim() || 'Week 1',
+          tasks,
+        };
+      });
+    }
+
+    setAiContent(updatedContent);
+    setEditingCard(null);
+    setEditFormData({});
+    
+    toast({
+      title: "Saved!",
+      description: "Card content has been updated.",
+    });
+  };
+
+  // Cancel inline editing
+  const cancelEdit = () => {
+    setEditingCard(null);
+    setEditFormData({});
+  };
+
+  // Note card functions
+  const addNote = (parentCard: CardKey) => {
+    const parentPos = positions[parentCard];
+    const parentSize = sizes[parentCard];
+    const newNote: NoteCard = {
+      id: `note-${Date.now()}`,
+      parentCard,
+      content: 'New note...',
+      x: parentPos.x + parentSize.width + 40,
+      y: parentPos.y + Math.random() * 100,
+    };
+    setNotes([...notes, newNote]);
+    setEditingNote(newNote.id);
+  };
+
+  const updateNoteContent = (noteId: string, content: string) => {
+    setNotes(notes.map(n => n.id === noteId ? { ...n, content } : n));
+  };
+
+  const deleteNote = (noteId: string) => {
+    setNotes(notes.filter(n => n.id !== noteId));
+  };
+
+  const handleNoteMouseDown = (e: React.MouseEvent, noteId: string) => {
+    // Don't start drag if clicking on textarea or button
+    if ((e.target as HTMLElement).closest('textarea') || (e.target as HTMLElement).closest('button')) return;
+    e.stopPropagation();
+    e.preventDefault();
+    setDraggingNote(noteId);
+    const note = notes.find(n => n.id === noteId);
+    if (note) {
+      // Calculate drag start accounting for current note position and zoom
+      setDragStart({ x: e.clientX - note.x * zoom, y: e.clientY - note.y * zoom });
+    }
+  };
+
+  // Get connector path from parent card to note
+  const getNoteConnectorPath = (note: NoteCard) => {
+    const parentPos = positions[note.parentCard];
+    const parentSize = sizes[note.parentCard];
+    
+    const x1 = parentPos.x + parentSize.width;
+    const y1 = parentPos.y + parentSize.height / 2;
+    const x2 = note.x;
+    const y2 = note.y + 40; // Center of note card
+    
+    const midX = (x1 + x2) / 2;
+    
+    return `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`;
+  };
+
+  // Get note border color based on parent card
+  const getNoteColor = (parentCard: CardKey) => {
+    switch (parentCard) {
+      case 'central': return 'border-zinc-500';
+      case 'ideaFeatures': return 'border-cyan-500/50';
+      case 'appType': return 'border-purple-500/50';
+      case 'tools': return 'border-emerald-500/50';
+      case 'backend': return 'border-rose-500/50';
+      case 'phases': return 'border-amber-500/50';
+      case 'courses': return 'border-indigo-500/50';
+      default: return 'border-zinc-500';
+    }
+  };
+
+  const toggleTodo = (id: number) => {
+    setTodos(todos.map(todo => 
+      todo.id === id ? { ...todo, completed: !todo.completed } : todo
+    ));
+  };
+
+  const phaseLabels: Record<number, { name: string; color: string }> = {
+    1: { name: "Project Overview", color: "text-zinc-400" },
+    2: { name: "Ideas & Features", color: "text-cyan-400" },
+    3: { name: "Application Type", color: "text-purple-400" },
+    4: { name: "Tech Stack", color: "text-emerald-400" },
+    5: { name: "Backend Features", color: "text-rose-400" },
+    6: { name: "Build Roadmap", color: "text-amber-400" },
+  };
+
+  const completedCount = todos.filter(t => t.completed).length;
+  const totalCount = todos.length;
+  const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+  const generateCursorPrompt = () => {
+    if (!aiContent) return;
+
+    const prompt = `# Project: ${projectName}
+
+## Overview
+**Problem Statement:** ${aiContent.overview.problemStatement}
+**Target Audience:** ${aiContent.overview.targetAudience}
+**Unique Value:** ${aiContent.overview.uniqueValue}
+
+## Features to Build
+${aiContent.features.map(f => `- ${f.name} (${f.priority}): ${f.description}`).join('\n')}
+
+## Application Type
+**Recommended:** ${aiContent.appType.recommended}
+**Reasons:**
+${aiContent.appType.reasons.map(r => `- ${r}`).join('\n')}
+
+## Tech Stack & AI Tools
+${aiContent.tools.filter(t => t.recommended).map(t => `- ${t.name}: ${t.description}`).join('\n')}
+
+## Backend Requirements
+${aiContent.backend.filter(b => b.priority === 'Required').map(b => `- ${b.name}: ${b.description}`).join('\n')}
+
+## Build Roadmap
+${aiContent.phases.map((p, i) => `### Phase ${i + 1}: ${p.name} (${p.week})
+${p.tasks.map(t => `- [ ] ${t}`).join('\n')}`).join('\n\n')}
+
+---
+
+## Instructions for Cursor
+
+I want to build this project step by step. Please help me:
+
+1. Start with Phase 1 setup - initialize the project structure
+2. Guide me through each feature implementation
+3. Help me set up the backend with Supabase
+4. Suggest best practices and clean code patterns
+5. Help me test and deploy when ready
+
+Let's begin with Phase 1. What files and structure should I create first?`;
+
+    setGeneratedPrompt(prompt);
+    return prompt;
+  };
+
+  const copyPromptToClipboard = async () => {
+    const prompt = generatedPrompt || generateCursorPrompt();
+    if (prompt) {
+      await navigator.clipboard.writeText(prompt);
+      setPromptCopied(true);
+      toast({
+        title: "Copied!",
+        description: "Cursor prompt copied to clipboard",
+      });
+      setTimeout(() => setPromptCopied(false), 2000);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black flex overflow-hidden">
+    <div className="fixed inset-0 bg-gradient-to-b from-black via-zinc-950 to-black flex overflow-hidden">
       {/* Back Button */}
       <Button
         size="icon"
         variant="outline"
-        className="fixed top-4 left-4 z-50 bg-zinc-900/90 border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+        className="fixed top-4 left-4 z-50 bg-zinc-900/90 border-zinc-700 text-zinc-300 hover:bg-zinc-800 rounded-full shadow-md"
         onClick={() => navigate('/projects')}
       >
         <ArrowLeft className="h-4 w-4" />
@@ -250,15 +826,15 @@ const ProjectView = () => {
 
       {/* Main Canvas Area */}
       <div 
-        className="flex-1 relative overflow-hidden bg-black"
+        className="flex-1 relative overflow-hidden"
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onWheel={handleWheel}
         onMouseDown={handleCanvasMouseDown}
         style={{ 
-          cursor: isPanning ? 'grabbing' : 'grab',
-          backgroundImage: 'radial-gradient(circle, rgba(255, 255, 255, 0.3) 1px, transparent 1px)',
-          backgroundSize: '20px 20px'
+          cursor: isPanning ? "grabbing" : "grab",
+          backgroundImage: "radial-gradient(circle at center, rgba(255,255,255,0.08) 0, transparent 55%), radial-gradient(circle, rgba(255, 255, 255, 0.18) 1px, transparent 1px)",
+          backgroundSize: "100% 100%, 22px 22px"
         }}
       >
         {/* Zoom Controls */}
@@ -266,7 +842,7 @@ const ProjectView = () => {
           <Button
             size="icon"
             variant="outline"
-            className="bg-zinc-900/90 border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+            className="bg-zinc-900/90 border-zinc-700 text-zinc-50/90 hover:bg-zinc-800 rounded-full shadow-md"
             onClick={handleZoomIn}
           >
             <ZoomIn className="h-4 w-4" />
@@ -274,7 +850,7 @@ const ProjectView = () => {
           <Button
             size="icon"
             variant="outline"
-            className="bg-zinc-900/90 border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+            className="bg-zinc-900/90 border-zinc-700 text-zinc-50/90 hover:bg-zinc-800 rounded-full shadow-md"
             onClick={handleZoomOut}
           >
             <ZoomOut className="h-4 w-4" />
@@ -282,20 +858,221 @@ const ProjectView = () => {
           <Button
             size="sm"
             variant="outline"
-            className="bg-zinc-900/90 border-zinc-700 text-zinc-300 hover:bg-zinc-800 text-xs"
+            className="bg-zinc-900/90 border-zinc-700 text-zinc-200 hover:bg-zinc-800 text-[10px] tracking-wide rounded-full px-3"
             onClick={handleResetZoom}
           >
-            {Math.round(zoom * 100)}%
+            {zoomLabel}
           </Button>
         </div>
+
         <div 
-          className="absolute inset-0 p-8 transition-transform duration-200 origin-center"
+          className="absolute inset-0 p-20 transition-transform duration-150 origin-center"
           style={{ 
             transform: `scale(${zoom}) translate(${panOffset.x}px, ${panOffset.y}px)`,
           }}
+          onMouseDown={handleCanvasMouseDown}
         >
-          {/* Idea & Features - Top Left */}
+          {/* Connector lines showing the flow between cards */}
+          <svg 
+            className="absolute pointer-events-none" 
+            style={{ 
+              top: 0, 
+              left: 0, 
+              width: '3000px', 
+              height: '2000px',
+              overflow: 'visible'
+            }}
+          >
+            {/* Pipeline Row 1: 1 → 2 → 3 → 4 */}
+            <CurvedConnector from="central" to="ideaFeatures" />
+            <CurvedConnector from="ideaFeatures" to="appType" />
+            <CurvedConnector from="appType" to="tools" />
+            {/* Vertical connector: 4 → 5 (drop down to second row) */}
+            <CurvedConnector from="tools" to="backend" />
+            {/* Pipeline Row 2: 5 → 6 → 7 → 8 */}
+            <CurvedConnector from="backend" to="phases" />
+            <CurvedConnector from="phases" to="courses" />
+            <CurvedConnector from="courses" to="prompt" />
+            {/* Note connectors */}
+            {notes.map(note => (
+              <path
+                key={`connector-${note.id}`}
+                d={getNoteConnectorPath(note)}
+                fill="none"
+                stroke="rgba(255, 255, 255, 0.4)"
+                strokeWidth="2"
+                strokeDasharray="6 4"
+                strokeLinecap="round"
+              />
+            ))}
+          </svg>
+
+          {/* Note Cards */}
+          {notes.map(note => (
+            <div
+              key={note.id}
+              data-note
+              className={`absolute select-none ${draggingNote === note.id ? 'cursor-grabbing' : 'cursor-grab'}`}
+              style={{
+                left: `${note.x}px`,
+                top: `${note.y}px`,
+                width: '180px',
+                zIndex: draggingNote === note.id ? 50 : 25,
+              }}
+              onMouseDown={(e) => handleNoteMouseDown(e, note.id)}
+            >
+              <div className={`bg-zinc-900/95 backdrop-blur-sm ${getNoteColor(note.parentCard)} border-2 rounded-lg shadow-lg p-2`}>
+                <div className="flex items-center justify-between mb-1">
+                  <StickyNote className="h-3 w-3 text-zinc-400" />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-5 w-5 text-zinc-500 hover:text-red-400 hover:bg-red-900/30 rounded"
+                    onClick={(e) => { e.stopPropagation(); deleteNote(note.id); }}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
+                {editingNote === note.id ? (
+                  <Textarea
+                    autoFocus
+                    value={note.content}
+                    onChange={(e) => updateNoteContent(note.id, e.target.value)}
+                    onBlur={() => setEditingNote(null)}
+                    onKeyDown={(e) => { if (e.key === 'Escape') setEditingNote(null); }}
+                    className="bg-zinc-800 border-zinc-600 text-zinc-100 text-xs resize-none p-1"
+                    rows={3}
+                  />
+                ) : (
+                  <p 
+                    className="text-xs text-zinc-300 cursor-text min-h-[40px]"
+                    onClick={(e) => { e.stopPropagation(); setEditingNote(note.id); }}
+                  >
+                    {note.content}
+                  </p>
+                )}
+              </div>
+            </div>
+          ))}
+
+          {/* Project Overview - Central Hub */}
+          <div
+            data-card
+            className="absolute cursor-move"
+            style={{
+              zIndex: dragging === "central" || resizing === "central" ? 22 : 12,
+              left: `${positions.central.x}px`,
+              top: `${positions.central.y}px`,
+              width: `${sizes.central.width}px`,
+              height: `${sizes.central.height}px`,
+            }}
+            onMouseDown={(e) => handleMouseDown(e, "central")}
+          >
+            <Card
+              className="w-full h-full bg-zinc-950/90 backdrop-blur-xl border-zinc-600/60 shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-2xl select-none relative flex flex-col"
+              style={{ fontSize: `${Math.max(0.7, sizes.central.width / 280)}rem` }}
+            >
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-start gap-3">
+                    <div className="w-7 h-7 rounded-full bg-zinc-700 flex items-center justify-center text-zinc-200 font-bold text-sm flex-shrink-0">1</div>
+                    <div>
+                      <p className="text-[0.6em] uppercase tracking-[0.2em] text-zinc-400 mb-1">
+                        🎯 Project Overview
+                      </p>
+                      <CardTitle className="text-xl text-zinc-50 font-bold" style={{ fontSize: "1.1em" }}>
+                        {projectName}
+                      </CardTitle>
+                    </div>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-7 w-7 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded-full"
+                      onClick={(e) => { e.stopPropagation(); addNote('central'); }}
+                      title="Add note"
+                    >
+                      <StickyNote className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-7 w-7 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded-full"
+                      onClick={(e) => { e.stopPropagation(); toggleEditCard('central'); }}
+                      title="Edit card"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="flex-1 flex flex-col gap-3 text-[0.75em] text-zinc-300 overflow-auto">
+                {editingCard === 'central' ? (
+                  <>
+                    <div className="space-y-1">
+                      <p className="text-zinc-400 font-medium text-xs">💡 Problem Statement</p>
+                      <Textarea
+                        value={editFormData.problemStatement || ''}
+                        onChange={(e) => setEditFormData({ ...editFormData, problemStatement: e.target.value })}
+                        className="bg-zinc-800 border-zinc-600 text-zinc-100 text-sm resize-none"
+                        rows={2}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-zinc-400 font-medium text-xs">👥 Target Audience</p>
+                      <Textarea
+                        value={editFormData.targetAudience || ''}
+                        onChange={(e) => setEditFormData({ ...editFormData, targetAudience: e.target.value })}
+                        className="bg-zinc-800 border-zinc-600 text-zinc-100 text-sm resize-none"
+                        rows={2}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-zinc-400 font-medium text-xs">✨ Unique Value</p>
+                      <Textarea
+                        value={editFormData.uniqueValue || ''}
+                        onChange={(e) => setEditFormData({ ...editFormData, uniqueValue: e.target.value })}
+                        className="bg-zinc-800 border-zinc-600 text-zinc-100 text-sm resize-none"
+                        rows={2}
+                      />
+                    </div>
+                    <div className="flex gap-2 mt-2">
+                      <Button size="sm" onClick={() => saveCardEdits('central')} className="flex-1 bg-green-600 hover:bg-green-700">
+                        <Check className="h-3 w-3 mr-1" /> Save
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={cancelEdit} className="flex-1 border-zinc-600 text-zinc-300 hover:bg-zinc-800">
+                        <X className="h-3 w-3 mr-1" /> Cancel
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="space-y-1 p-2 bg-zinc-900/50 rounded-lg">
+                      <p className="text-zinc-400 font-medium">💡 Problem Statement</p>
+                      <p className="text-zinc-300 text-[0.9em]">{aiContent?.overview.problemStatement || projectDescription || 'Define the core problem your app solves'}</p>
+                    </div>
+                    <div className="space-y-1 p-2 bg-zinc-900/50 rounded-lg">
+                      <p className="text-zinc-400 font-medium">👥 Target Audience</p>
+                      <p className="text-zinc-300 text-[0.9em]">{aiContent?.overview.targetAudience || 'Who will use this app and why they need it'}</p>
+                    </div>
+                    <div className="space-y-1 p-2 bg-zinc-900/50 rounded-lg">
+                      <p className="text-zinc-400 font-medium">✨ Unique Value</p>
+                      <p className="text-zinc-300 text-[0.9em]">{aiContent?.overview.uniqueValue || 'What makes this different from existing solutions'}</p>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+              <div
+                className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize bg-zinc-700/90 hover:bg-zinc-500 transition-colors"
+                onMouseDown={(e) => handleResizeMouseDown(e, "central")}
+                style={{ borderRadius: "0 0 10px 0" }}
+              />
+            </Card>
+          </div>
+          {/* Ideas & Features */}
           <div 
+            data-card
             className="absolute cursor-move"
             style={{ 
               zIndex: dragging === 'ideaFeatures' || resizing === 'ideaFeatures' ? 20 : 10,
@@ -306,49 +1083,88 @@ const ProjectView = () => {
             }}
             onMouseDown={(e) => handleMouseDown(e, 'ideaFeatures')}
           >
-            <Card className="w-full h-full bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none relative flex flex-col" style={{ fontSize: `${Math.max(0.6, sizes.ideaFeatures.width / 256)}rem` }}>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg text-cyan-400" style={{ textShadow: '0 0 8px rgba(34, 211, 238, 0.8), 0 0 16px rgba(34, 211, 238, 0.6), 0 0 24px rgba(34, 211, 238, 0.4)', fontSize: '1.125em' }}>Idea & Features</CardTitle>
-                  <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800" style={{ padding: '0.25em' }}>
-                    <Plus style={{ width: '1em', height: '1em' }} />
-                  </Button>
+            <Card className="w-full h-full bg-zinc-950/80 backdrop-blur-xl border-cyan-500/35 shadow-[0_0_32px_rgba(34,211,238,0.25)] rounded-2xl select-none relative flex flex-col" style={{ fontSize: `${Math.max(0.6, sizes.ideaFeatures.width / 256)}rem` }}>
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-start gap-3">
+                    <div className="w-7 h-7 rounded-full bg-cyan-500/30 flex items-center justify-center text-cyan-200 font-bold text-sm flex-shrink-0">2</div>
+                    <div>
+                      <p className="text-[0.6em] uppercase tracking-[0.2em] text-cyan-300/80 mb-1">
+                        💡 Ideas &amp; Features
+                      </p>
+                      <CardTitle className="text-lg text-cyan-300" style={{ textShadow: '0 0 8px rgba(34, 211, 238, 0.8), 0 0 18px rgba(34, 211, 238, 0.6)', fontSize: '1em' }}>Core Features</CardTitle>
+                    </div>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-7 w-7 text-cyan-400 hover:text-cyan-100 hover:bg-cyan-900/50 rounded-full"
+                      onClick={(e) => { e.stopPropagation(); addNote('ideaFeatures'); }}
+                      title="Add note"
+                    >
+                      <StickyNote className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-7 w-7 text-cyan-400 hover:text-cyan-100 hover:bg-cyan-900/50 rounded-full"
+                      onClick={(e) => { e.stopPropagation(); toggleEditCard('ideaFeatures'); }}
+                      title="Edit card"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                 </div>
-                <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>Core concept and functionality</p>
+                <p className="text-xs text-zinc-400 ml-10" style={{ fontSize: '0.75em' }}>Essential features &amp; recommendations</p>
               </CardHeader>
-              <CardContent className="space-y-3 flex-1 overflow-auto">
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200" style={{ fontSize: '0.875em' }}>Note Creation</div>
-                  <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>
-                    Quick and easy note creation with rich text support
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200" style={{ fontSize: '0.875em' }}>Organization</div>
-                  <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>
-                    Category-based organization for better management
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200" style={{ fontSize: '0.875em' }}>Search & Filter</div>
-                  <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>
-                    Find notes quickly with search and filtering options
-                  </p>
-                </div>
-                <Button variant="outline" size="sm" className="w-full mt-2 border-zinc-700 text-zinc-300 hover:bg-zinc-800" style={{ fontSize: '0.875em' }}>
-                  + Add Feature
-                </Button>
+              <CardContent className="space-y-2 flex-1 overflow-auto pr-1">
+                {editingCard === 'ideaFeatures' ? (
+                  <>
+                    <p className="text-xs text-zinc-400">One feature per line (Name: Description)</p>
+                    <Textarea
+                      value={editFormData.features || ''}
+                      onChange={(e) => setEditFormData({ ...editFormData, features: e.target.value })}
+                      className="bg-zinc-800 border-zinc-600 text-zinc-100 text-sm resize-none flex-1"
+                      rows={8}
+                      placeholder="🔐 User Auth: Sign up and login&#10;📊 Dashboard: Main interface"
+                    />
+                    <div className="flex gap-2 mt-2">
+                      <Button size="sm" onClick={() => saveCardEdits('ideaFeatures')} className="flex-1 bg-cyan-600 hover:bg-cyan-700">
+                        <Check className="h-3 w-3 mr-1" /> Save
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={cancelEdit} className="flex-1 border-zinc-600 text-zinc-300 hover:bg-zinc-800">
+                        <X className="h-3 w-3 mr-1" /> Cancel
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {aiContent?.features.map((feature, index) => (
+                      <div key={index} className={`space-y-1.5 p-2 rounded-lg border ${feature.priority === 'Essential' ? 'bg-cyan-500/10 border-cyan-500/30' : 'bg-zinc-900/50 border-zinc-800/50'}`}>
+                        <div className={`text-sm font-semibold ${feature.priority === 'Essential' ? 'text-cyan-200' : 'text-zinc-100'}`} style={{ fontSize: '0.875em' }}>{feature.name}</div>
+                        <p className="text-xs text-zinc-400" style={{ fontSize: '0.75em' }}>
+                          {feature.description}
+                        </p>
+                        <Badge className={`text-[0.65em] ${feature.priority === 'Essential' ? 'bg-cyan-500/20 text-cyan-300' : feature.priority === 'Core' ? 'bg-zinc-600/50 text-zinc-200' : 'bg-zinc-700/50 text-zinc-300'}`}>{feature.priority}</Badge>
+                      </div>
+                    )) || (
+                      <div className="text-zinc-500 text-center py-4">Loading features...</div>
+                    )}
+                  </>
+                )}
               </CardContent>
               <div 
-                className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize bg-zinc-700 hover:bg-zinc-600 transition-colors"
+                className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize bg-cyan-500/80 hover:bg-cyan-400 transition-colors"
                 onMouseDown={(e) => handleResizeMouseDown(e, 'ideaFeatures')}
-                style={{ borderRadius: '0 0 8px 0' }}
+                style={{ borderRadius: '0 0 10px 0' }}
               />
             </Card>
           </div>
 
-          {/* Type of Application - Top Right */}
+          {/* Type of Application */}
           <div 
+            data-card
             className="absolute cursor-move"
             style={{ 
               zIndex: dragging === 'appType' || resizing === 'appType' ? 20 : 10,
@@ -359,49 +1175,116 @@ const ProjectView = () => {
             }}
             onMouseDown={(e) => handleMouseDown(e, 'appType')}
           >
-            <Card className="w-full h-full bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none relative flex flex-col" style={{ fontSize: `${Math.max(0.6, sizes.appType.width / 256)}rem` }}>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg text-purple-400" style={{ textShadow: '0 0 8px rgba(192, 132, 252, 0.8), 0 0 16px rgba(192, 132, 252, 0.6), 0 0 24px rgba(192, 132, 252, 0.4)', fontSize: '1.125em' }}>Type of Application</CardTitle>
-                  <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800" style={{ padding: '0.25em' }}>
-                    <Plus style={{ width: '1em', height: '1em' }} />
-                  </Button>
+            <Card className="w-full h-full bg-zinc-950/80 backdrop-blur-xl border-purple-500/35 shadow-[0_0_32px_rgba(168,85,247,0.25)] rounded-2xl select-none relative flex flex-col" style={{ fontSize: `${Math.max(0.6, sizes.appType.width / 256)}rem` }}>
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-start gap-3">
+                    <div className="w-7 h-7 rounded-full bg-purple-500/30 flex items-center justify-center text-purple-200 font-bold text-sm flex-shrink-0">3</div>
+                    <div>
+                      <p className="text-[0.6em] uppercase tracking-[0.2em] text-purple-300/80 mb-1">
+                        📱 Application Type
+                      </p>
+                      <CardTitle className="text-lg text-purple-300" style={{ textShadow: '0 0 8px rgba(192, 132, 252, 0.8), 0 0 18px rgba(192, 132, 252, 0.6)', fontSize: '1em' }}>What to Build &amp; Why</CardTitle>
+                    </div>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-7 w-7 text-purple-400 hover:text-purple-100 hover:bg-purple-900/50 rounded-full"
+                      onClick={(e) => { e.stopPropagation(); addNote('appType'); }}
+                      title="Add note"
+                    >
+                      <StickyNote className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-7 w-7 text-purple-400 hover:text-purple-100 hover:bg-purple-900/50 rounded-full"
+                      onClick={(e) => { e.stopPropagation(); toggleEditCard('appType'); }}
+                      title="Edit card"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                 </div>
-                <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>Application category and scope</p>
+                <p className="text-xs text-zinc-400 ml-10" style={{ fontSize: '0.75em' }}>Platform recommendation based on your idea</p>
               </CardHeader>
-              <CardContent className="space-y-3 flex-1 overflow-auto">
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200" style={{ fontSize: '0.875em' }}>Web Application</div>
-                  <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>
-                    Browser-based app accessible on any device
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200" style={{ fontSize: '0.875em' }}>Productivity Tool</div>
-                  <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>
-                    Designed to help users organize and manage information
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200" style={{ fontSize: '0.875em' }}>Single User</div>
-                  <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>
-                    Personal note-taking without collaboration features
-                  </p>
-                </div>
-                <Button variant="outline" size="sm" className="w-full mt-2 border-zinc-700 text-zinc-300 hover:bg-zinc-800" style={{ fontSize: '0.875em' }}>
-                  + Add Detail
-                </Button>
+              <CardContent className="space-y-3 flex-1 overflow-auto pr-1">
+                {editingCard === 'appType' ? (
+                  <>
+                    <div className="space-y-1">
+                      <p className="text-zinc-400 font-medium text-xs">Recommended App Type</p>
+                      <input
+                        type="text"
+                        value={editFormData.recommended || ''}
+                        onChange={(e) => setEditFormData({ ...editFormData, recommended: e.target.value })}
+                        className="w-full bg-zinc-800 border border-zinc-600 text-zinc-100 text-sm rounded px-2 py-1"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-zinc-400 font-medium text-xs">Reasons (one per line)</p>
+                      <Textarea
+                        value={editFormData.reasons || ''}
+                        onChange={(e) => setEditFormData({ ...editFormData, reasons: e.target.value })}
+                        className="bg-zinc-800 border-zinc-600 text-zinc-100 text-sm resize-none"
+                        rows={4}
+                      />
+                    </div>
+                    <div className="flex gap-2 mt-2">
+                      <Button size="sm" onClick={() => saveCardEdits('appType')} className="flex-1 bg-purple-600 hover:bg-purple-700">
+                        <Check className="h-3 w-3 mr-1" /> Save
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={cancelEdit} className="flex-1 border-zinc-600 text-zinc-300 hover:bg-zinc-800">
+                        <X className="h-3 w-3 mr-1" /> Cancel
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="p-3 bg-purple-500/10 rounded-lg border border-purple-500/30">
+                      <div className="text-sm font-semibold text-purple-200 mb-2" style={{ fontSize: '0.9em' }}>✅ Recommended: {aiContent?.appType.recommended || 'Web Application'}</div>
+                      <p className="text-xs text-zinc-400 mb-2" style={{ fontSize: '0.75em' }}>
+                        Best choice for {projectName} because:
+                      </p>
+                      <ul className="text-xs text-zinc-400 space-y-1" style={{ fontSize: '0.72em' }}>
+                        {aiContent?.appType.reasons.map((reason, i) => (
+                          <li key={i}>• {reason}</li>
+                        )) || (
+                          <>
+                            <li>• Cross-platform - works on any device</li>
+                            <li>• No app store approval needed</li>
+                          </>
+                        )}
+                      </ul>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-zinc-300" style={{ fontSize: '0.8em' }}>Other Options:</p>
+                      {aiContent?.appType.alternatives.map((alt, i) => (
+                        <div key={i} className="p-2 bg-zinc-900/50 rounded-lg border border-zinc-800/50">
+                          <div className="text-sm font-medium text-zinc-300" style={{ fontSize: '0.85em' }}>{alt.name}</div>
+                          <p className="text-xs text-zinc-500" style={{ fontSize: '0.7em' }}>
+                            {alt.description}
+                          </p>
+                        </div>
+                      )) || (
+                        <div className="text-zinc-500 text-center py-2">Loading alternatives...</div>
+                      )}
+                    </div>
+                  </>
+                )}
               </CardContent>
               <div 
-                className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize bg-zinc-700 hover:bg-zinc-600 transition-colors"
+                className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize bg-purple-500/80 hover:bg-purple-400 transition-colors"
                 onMouseDown={(e) => handleResizeMouseDown(e, 'appType')}
-                style={{ borderRadius: '0 0 8px 0' }}
+                style={{ borderRadius: '0 0 10px 0' }}
               />
             </Card>
           </div>
 
-          {/* Tools to Use to Build - Bottom Right */}
+          {/* Tech Stack & Tools */}
           <div 
+            data-card
             className="absolute cursor-move"
             style={{ 
               zIndex: dragging === 'tools' || resizing === 'tools' ? 20 : 10,
@@ -412,55 +1295,87 @@ const ProjectView = () => {
             }}
             onMouseDown={(e) => handleMouseDown(e, 'tools')}
           >
-            <Card className="w-full h-full bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none relative flex flex-col" style={{ fontSize: `${Math.max(0.6, sizes.tools.width / 256)}rem` }}>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg text-emerald-400" style={{ textShadow: '0 0 8px rgba(52, 211, 153, 0.8), 0 0 16px rgba(52, 211, 153, 0.6), 0 0 24px rgba(52, 211, 153, 0.4)', fontSize: '1.125em' }}>Tools to Use to Build</CardTitle>
-                  <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800" style={{ padding: '0.25em' }}>
-                    <Plus style={{ width: '1em', height: '1em' }} />
-                  </Button>
+            <Card className="w-full h-full bg-zinc-950/80 backdrop-blur-xl border-emerald-400/35 shadow-[0_0_32px_rgba(16,185,129,0.25)] rounded-2xl select-none relative flex flex-col" style={{ fontSize: `${Math.max(0.6, sizes.tools.width / 256)}rem` }}>
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-start gap-3">
+                    <div className="w-7 h-7 rounded-full bg-emerald-500/30 flex items-center justify-center text-emerald-200 font-bold text-sm flex-shrink-0">4</div>
+                    <div>
+                      <p className="text-[0.6em] uppercase tracking-[0.2em] text-emerald-300/80 mb-1">
+                        🤖 AI Coding Tools
+                      </p>
+                      <CardTitle className="text-lg text-emerald-300" style={{ textShadow: '0 0 8px rgba(52, 211, 153, 0.8), 0 0 18px rgba(52, 211, 153, 0.6)', fontSize: '1em' }}>Build With AI</CardTitle>
+                    </div>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-7 w-7 text-emerald-400 hover:text-emerald-100 hover:bg-emerald-900/50 rounded-full"
+                      onClick={(e) => { e.stopPropagation(); addNote('tools'); }}
+                      title="Add note"
+                    >
+                      <StickyNote className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-7 w-7 text-emerald-400 hover:text-emerald-100 hover:bg-emerald-900/50 rounded-full"
+                      onClick={(e) => { e.stopPropagation(); toggleEditCard('tools'); }}
+                      title="Edit card"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                 </div>
-                <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>Development stack and tools</p>
+                <p className="text-xs text-zinc-400 ml-10" style={{ fontSize: '0.75em' }}>Best AI tools to build your app faster</p>
               </CardHeader>
-              <CardContent className="space-y-3 flex-1 overflow-auto">
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200" style={{ fontSize: '0.875em' }}>React + TypeScript</div>
-                  <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>
-                    Modern frontend framework with type safety
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200" style={{ fontSize: '0.875em' }}>Supabase</div>
-                  <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>
-                    Database and authentication backend
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200" style={{ fontSize: '0.875em' }}>Tailwind CSS</div>
-                  <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>
-                    Utility-first styling framework
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200" style={{ fontSize: '0.875em' }}>Vite</div>
-                  <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>
-                    Fast build tool and development server
-                  </p>
-                </div>
-                <Button variant="outline" size="sm" className="w-full mt-2 border-zinc-700 text-zinc-300 hover:bg-zinc-800" style={{ fontSize: '0.875em' }}>
-                  + Add Tool
-                </Button>
+              <CardContent className="space-y-2 flex-1 overflow-auto pr-1">
+                {editingCard === 'tools' ? (
+                  <>
+                    <p className="text-xs text-zinc-400">One tool per line (Name: Description)</p>
+                    <Textarea
+                      value={editFormData.tools || ''}
+                      onChange={(e) => setEditFormData({ ...editFormData, tools: e.target.value })}
+                      className="bg-zinc-800 border-zinc-600 text-zinc-100 text-sm resize-none flex-1"
+                      rows={8}
+                    />
+                    <div className="flex gap-2 mt-2">
+                      <Button size="sm" onClick={() => saveCardEdits('tools')} className="flex-1 bg-emerald-600 hover:bg-emerald-700">
+                        <Check className="h-3 w-3 mr-1" /> Save
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={cancelEdit} className="flex-1 border-zinc-600 text-zinc-300 hover:bg-zinc-800">
+                        <X className="h-3 w-3 mr-1" /> Cancel
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {aiContent?.tools.map((tool, index) => (
+                      <div key={index} className={`p-2 rounded-lg border ${tool.recommended ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-zinc-900/50 border-zinc-800/50'}`}>
+                        <div className={`text-sm font-${tool.recommended ? 'semibold' : 'medium'} ${tool.recommended ? 'text-emerald-200' : 'text-zinc-200'}`} style={{ fontSize: '0.85em' }}>{tool.name}</div>
+                        <p className={`text-xs ${tool.recommended ? 'text-zinc-400' : 'text-zinc-500'}`} style={{ fontSize: '0.7em' }}>
+                          {tool.description}
+                        </p>
+                        {tool.recommended && <Badge className="bg-emerald-500/20 text-emerald-300 text-[0.6em] mt-1">Recommended</Badge>}
+                      </div>
+                    )) || (
+                      <div className="text-zinc-500 text-center py-4">Loading tools...</div>
+                    )}
+                  </>
+                )}
               </CardContent>
               <div 
-                className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize bg-zinc-700 hover:bg-zinc-600 transition-colors"
+                className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize bg-emerald-400/80 hover:bg-emerald-300 transition-colors"
                 onMouseDown={(e) => handleResizeMouseDown(e, 'tools')}
-                style={{ borderRadius: '0 0 8px 0' }}
+                style={{ borderRadius: '0 0 10px 0' }}
               />
             </Card>
           </div>
 
-          {/* Phase Building - Bottom Left */}
+          {/* Phase Building / Roadmap */}
           <div 
+            data-card
             className="absolute cursor-move"
             style={{ 
               zIndex: dragging === 'phases' || resizing === 'phases' ? 20 : 10,
@@ -471,49 +1386,334 @@ const ProjectView = () => {
             }}
             onMouseDown={(e) => handleMouseDown(e, 'phases')}
           >
-            <Card className="w-full h-full bg-zinc-900/90 backdrop-blur border-zinc-800 shadow-xl select-none relative flex flex-col" style={{ fontSize: `${Math.max(0.6, sizes.phases.width / 256)}rem` }}>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg text-amber-400" style={{ textShadow: '0 0 8px rgba(251, 191, 36, 0.8), 0 0 16px rgba(251, 191, 36, 0.6), 0 0 24px rgba(251, 191, 36, 0.4)', fontSize: '1.125em' }}>Phase Building</CardTitle>
-                  <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800" style={{ padding: '0.25em' }}>
-                    <Plus style={{ width: '1em', height: '1em' }} />
-                  </Button>
+            <Card className="w-full h-full bg-zinc-950/80 backdrop-blur-xl border-amber-400/35 shadow-[0_0_32px_rgba(251,191,36,0.25)] rounded-2xl select-none relative flex flex-col" style={{ fontSize: `${Math.max(0.6, sizes.phases.width / 256)}rem` }}>
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-start gap-3">
+                    <div className="w-7 h-7 rounded-full bg-amber-500/30 flex items-center justify-center text-amber-200 font-bold text-sm flex-shrink-0">6</div>
+                    <div>
+                      <p className="text-[0.6em] uppercase tracking-[0.2em] text-amber-300/80 mb-1">
+                        📋 Build Roadmap
+                      </p>
+                      <CardTitle className="text-lg text-amber-300" style={{ textShadow: '0 0 8px rgba(251, 191, 36, 0.8), 0 0 18px rgba(251, 191, 36, 0.6)', fontSize: '1em' }}>Phase Building</CardTitle>
+                    </div>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-7 w-7 text-amber-400 hover:text-amber-100 hover:bg-amber-900/50 rounded-full"
+                      onClick={(e) => { e.stopPropagation(); addNote('phases'); }}
+                      title="Add note"
+                    >
+                      <StickyNote className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-7 w-7 text-amber-400 hover:text-amber-100 hover:bg-amber-900/50 rounded-full"
+                      onClick={(e) => { e.stopPropagation(); toggleEditCard('phases'); }}
+                      title="Edit card"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                 </div>
-                <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>Development roadmap and milestones</p>
+                <p className="text-xs text-zinc-400 ml-10" style={{ fontSize: '0.75em' }}>Step-by-step development roadmap</p>
               </CardHeader>
-              <CardContent className="space-y-3 flex-1 overflow-auto">
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200" style={{ fontSize: '0.875em' }}>Phase 1: Setup</div>
-                  <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>
-                    Initialize project, set up database and authentication
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200" style={{ fontSize: '0.875em' }}>Phase 2: Core Features</div>
-                  <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>
-                    Build note creation, editing, and basic organization
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200" style={{ fontSize: '0.875em' }}>Phase 3: Polish</div>
-                  <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>
-                    Add search, filters, and improve user experience
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-zinc-200" style={{ fontSize: '0.875em' }}>Phase 4: Launch</div>
-                  <p className="text-xs text-zinc-500" style={{ fontSize: '0.75em' }}>
-                    Testing, bug fixes, and deployment to production
-                  </p>
-                </div>
-                <Button variant="outline" size="sm" className="w-full mt-2 border-zinc-700 text-zinc-300 hover:bg-zinc-800" style={{ fontSize: '0.875em' }}>
-                  + Add Phase
-                </Button>
+              <CardContent className="space-y-2 flex-1 overflow-auto pr-1">
+                {editingCard === 'phases' ? (
+                  <>
+                    <p className="text-xs text-zinc-400">Phase Name (Week):\n- Task 1\n- Task 2</p>
+                    <Textarea
+                      value={editFormData.phases || ''}
+                      onChange={(e) => setEditFormData({ ...editFormData, phases: e.target.value })}
+                      className="bg-zinc-800 border-zinc-600 text-zinc-100 text-sm resize-none flex-1"
+                      rows={10}
+                    />
+                    <div className="flex gap-2 mt-2">
+                      <Button size="sm" onClick={() => saveCardEdits('phases')} className="flex-1 bg-amber-600 hover:bg-amber-700">
+                        <Check className="h-3 w-3 mr-1" /> Save
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={cancelEdit} className="flex-1 border-zinc-600 text-zinc-300 hover:bg-zinc-800">
+                        <X className="h-3 w-3 mr-1" /> Cancel
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {aiContent?.phases.map((phase, index) => (
+                      <div key={index} className={`p-2 rounded-lg border ${index === 0 ? 'bg-amber-500/15 border-amber-500/40' : 'bg-zinc-900/50 border-zinc-800/50'}`}>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className={`${index === 0 ? 'text-amber-300' : 'text-zinc-400'} font-bold text-[0.75em]`}>{index + 1}</span>
+                          <div className={`text-sm font-${index === 0 ? 'semibold' : 'medium'} ${index === 0 ? 'text-amber-200' : 'text-zinc-200'}`} style={{ fontSize: '0.85em' }}>{phase.name}</div>
+                          <Badge className={`text-[0.55em] ml-auto ${index === 0 ? 'bg-amber-500/20 text-amber-300' : 'bg-zinc-700/50 text-zinc-300'}`}>{phase.week}</Badge>
+                        </div>
+                        <ul className={`text-xs space-y-0.5 ml-4 ${index === 0 ? 'text-zinc-400' : 'text-zinc-500'}`} style={{ fontSize: '0.7em' }}>
+                          {phase.tasks.map((task, i) => (
+                            <li key={i}>☐ {task}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )) || (
+                      <div className="text-zinc-500 text-center py-4">Loading phases...</div>
+                    )}
+                  </>
+                )}
               </CardContent>
               <div 
-                className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize bg-zinc-700 hover:bg-zinc-600 transition-colors"
+                className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize bg-amber-400/80 hover:bg-amber-300 transition-colors"
                 onMouseDown={(e) => handleResizeMouseDown(e, 'phases')}
-                style={{ borderRadius: '0 0 8px 0' }}
+                style={{ borderRadius: '0 0 10px 0' }}
+              />
+            </Card>
+                </div>
+
+          {/* Backend Features */}
+          <div 
+            data-card
+            className="absolute cursor-move"
+            style={{ 
+              zIndex: dragging === 'backend' || resizing === 'backend' ? 20 : 10,
+              left: `${positions.backend.x}px`,
+              top: `${positions.backend.y}px`,
+              width: `${sizes.backend.width}px`,
+              height: `${sizes.backend.height}px`,
+            }}
+            onMouseDown={(e) => handleMouseDown(e, 'backend')}
+          >
+            <Card className="w-full h-full bg-zinc-950/80 backdrop-blur-xl border-rose-500/35 shadow-[0_0_32px_rgba(244,63,94,0.25)] rounded-2xl select-none relative flex flex-col" style={{ fontSize: `${Math.max(0.6, sizes.backend.width / 256)}rem` }}>
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-start gap-3">
+                    <div className="w-7 h-7 rounded-full bg-rose-500/30 flex items-center justify-center text-rose-200 font-bold text-sm flex-shrink-0">5</div>
+                    <div>
+                      <p className="text-[0.6em] uppercase tracking-[0.2em] text-rose-300/80 mb-1">
+                        ⚙️ Backend Requirements
+                      </p>
+                      <CardTitle className="text-lg text-rose-300" style={{ textShadow: '0 0 8px rgba(244, 63, 94, 0.8), 0 0 18px rgba(244, 63, 94, 0.6)', fontSize: '1em' }}>Backend Features</CardTitle>
+                    </div>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-7 w-7 text-rose-400 hover:text-rose-100 hover:bg-rose-900/50 rounded-full"
+                      onClick={(e) => { e.stopPropagation(); addNote('backend'); }}
+                      title="Add note"
+                    >
+                      <StickyNote className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-7 w-7 text-rose-400 hover:text-rose-100 hover:bg-rose-900/50 rounded-full"
+                      onClick={(e) => { e.stopPropagation(); toggleEditCard('backend'); }}
+                      title="Edit card"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+                <p className="text-xs text-zinc-400 ml-10" style={{ fontSize: '0.75em' }}>Essential backend services for your app</p>
+              </CardHeader>
+              <CardContent className="space-y-2 flex-1 overflow-auto pr-1">
+                {editingCard === 'backend' ? (
+                  <>
+                    <p className="text-xs text-zinc-400">Format: Name (Priority): Description</p>
+                    <Textarea
+                      value={editFormData.backend || ''}
+                      onChange={(e) => setEditFormData({ ...editFormData, backend: e.target.value })}
+                      className="bg-zinc-800 border-zinc-600 text-zinc-100 text-sm resize-none flex-1"
+                      rows={8}
+                      placeholder="🔐 Authentication (Required): User sign-up, login"
+                    />
+                    <div className="flex gap-2 mt-2">
+                      <Button size="sm" onClick={() => saveCardEdits('backend')} className="flex-1 bg-rose-600 hover:bg-rose-700">
+                        <Check className="h-3 w-3 mr-1" /> Save
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={cancelEdit} className="flex-1 border-zinc-600 text-zinc-300 hover:bg-zinc-800">
+                        <X className="h-3 w-3 mr-1" /> Cancel
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {aiContent?.backend.map((item, index) => (
+                      <div key={index} className={`p-2 rounded-lg border ${item.priority === 'Required' ? 'bg-rose-500/10 border-rose-500/30' : 'bg-zinc-900/50 border-zinc-800/50'}`}>
+                        <div className={`text-sm font-${item.priority === 'Required' ? 'semibold' : 'medium'} ${item.priority === 'Required' ? 'text-rose-200' : 'text-zinc-200'}`} style={{ fontSize: '0.85em' }}>{item.name}</div>
+                        <p className={`text-xs ${item.priority === 'Required' ? 'text-zinc-400' : 'text-zinc-500'}`} style={{ fontSize: '0.7em' }}>
+                          {item.description}
+                        </p>
+                        <Badge className={`text-[0.6em] mt-1 ${item.priority === 'Required' ? 'bg-rose-500/20 text-rose-300' : item.priority === 'Recommended' ? 'bg-zinc-600/50 text-zinc-200' : 'bg-zinc-700/50 text-zinc-300'}`}>{item.priority}</Badge>
+                      </div>
+                    )) || (
+                      <div className="text-zinc-500 text-center py-4">Loading backend features...</div>
+                    )}
+                  </>
+                )}
+              </CardContent>
+              <div 
+                className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize bg-rose-500/80 hover:bg-rose-400 transition-colors"
+                onMouseDown={(e) => handleResizeMouseDown(e, 'backend')}
+                style={{ borderRadius: '0 0 10px 0' }}
+              />
+            </Card>
+          </div>
+
+          {/* Course Videos */}
+          <div 
+            data-card
+            className="absolute cursor-move"
+            style={{ 
+              zIndex: dragging === 'courses' || resizing === 'courses' ? 20 : 10,
+              left: `${positions.courses.x}px`,
+              top: `${positions.courses.y}px`,
+              width: `${sizes.courses.width}px`,
+              height: `${sizes.courses.height}px`,
+            }}
+            onMouseDown={(e) => handleMouseDown(e, 'courses')}
+          >
+            <Card className="w-full h-full bg-zinc-950/80 backdrop-blur-xl border-indigo-500/35 shadow-[0_0_32px_rgba(99,102,241,0.25)] rounded-2xl select-none relative flex flex-col" style={{ fontSize: `${Math.max(0.6, sizes.courses.width / 256)}rem` }}>
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-start gap-3">
+                    <div className="w-7 h-7 rounded-full bg-indigo-500/30 flex items-center justify-center text-indigo-200 font-bold text-sm flex-shrink-0">7</div>
+                    <div>
+                      <p className="text-[0.6em] uppercase tracking-[0.2em] text-indigo-300/80 mb-1">
+                        🎬 Learning Path
+                      </p>
+                      <CardTitle className="text-lg text-indigo-300" style={{ textShadow: '0 0 8px rgba(99, 102, 241, 0.8), 0 0 18px rgba(99, 102, 241, 0.6)', fontSize: '1em' }}>Course Videos to Follow</CardTitle>
+                    </div>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-7 w-7 text-indigo-400 hover:text-indigo-100 hover:bg-indigo-900/50 rounded-full"
+                      onClick={(e) => { e.stopPropagation(); addNote('courses'); }}
+                      title="Add note"
+                    >
+                      <StickyNote className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-7 w-7 text-indigo-400 hover:text-indigo-100 hover:bg-indigo-900/50 rounded-full"
+                      onClick={(e) => { e.stopPropagation(); toggleEditCard('courses'); }}
+                      title="Edit card"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+                <p className="text-xs text-zinc-400 ml-10" style={{ fontSize: '0.75em' }}>Recommended tutorials for your project</p>
+              </CardHeader>
+              <CardContent className="space-y-2 flex-1 overflow-auto pr-1">
+                {editingCard === 'courses' ? (
+                  <>
+                    <p className="text-xs text-zinc-400">Add course links or notes</p>
+                    <Textarea
+                      value={editFormData.courses || ''}
+                      onChange={(e) => setEditFormData({ ...editFormData, courses: e.target.value })}
+                      className="bg-zinc-800 border-zinc-600 text-zinc-100 text-sm resize-none flex-1"
+                      rows={8}
+                      placeholder="Add course recommendations or tutorial links here..."
+                    />
+                    <div className="flex gap-2 mt-2">
+                      <Button size="sm" onClick={() => saveCardEdits('courses')} className="flex-1 bg-indigo-600 hover:bg-indigo-700">
+                        <Check className="h-3 w-3 mr-1" /> Save
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={cancelEdit} className="flex-1 border-zinc-600 text-zinc-300 hover:bg-zinc-800">
+                        <X className="h-3 w-3 mr-1" /> Cancel
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex-1 flex items-center justify-center">
+                    <div className="text-center text-zinc-500">
+                      <div className="text-4xl mb-3">🎥</div>
+                      <p className="text-sm">Course recommendations coming soon</p>
+                      <p className="text-xs mt-1 text-zinc-600">Click the pencil to add your own</p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+              <div 
+                className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize bg-indigo-500/80 hover:bg-indigo-400 transition-colors"
+                onMouseDown={(e) => handleResizeMouseDown(e, 'courses')}
+                style={{ borderRadius: '0 0 10px 0' }}
+              />
+            </Card>
+          </div>
+
+          {/* Cursor Prompt Generator */}
+          <div 
+            data-card
+            className="absolute cursor-move"
+            style={{ 
+              zIndex: dragging === 'prompt' || resizing === 'prompt' ? 20 : 10,
+              left: `${positions.prompt.x}px`,
+              top: `${positions.prompt.y}px`,
+              width: `${sizes.prompt.width}px`,
+              height: `${sizes.prompt.height}px`,
+            }}
+            onMouseDown={(e) => handleMouseDown(e, 'prompt')}
+          >
+            <Card className="w-full h-full bg-zinc-950/80 backdrop-blur-xl border-green-500/35 shadow-[0_0_32px_rgba(34,197,94,0.25)] rounded-2xl select-none relative flex flex-col" style={{ fontSize: `${Math.max(0.6, sizes.prompt.width / 256)}rem` }}>
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-start gap-3">
+                    <div className="w-7 h-7 rounded-full bg-green-500/30 flex items-center justify-center text-green-200 font-bold text-sm flex-shrink-0">8</div>
+                    <div>
+                      <p className="text-[0.6em] uppercase tracking-[0.2em] text-green-300/80 mb-1">
+                        🚀 Start Building
+                      </p>
+                      <CardTitle className="text-lg text-green-300" style={{ textShadow: '0 0 8px rgba(34, 197, 94, 0.8), 0 0 18px rgba(34, 197, 94, 0.6)', fontSize: '1em' }}>Cursor Prompt</CardTitle>
+                </div>
+                  </div>
+                </div>
+                <p className="text-xs text-zinc-400 ml-10" style={{ fontSize: '0.75em' }}>Generate a prompt for Cursor AI</p>
+              </CardHeader>
+              <CardContent className="space-y-3 flex-1 overflow-auto pr-1">
+                <div className="text-center py-2">
+                  <div className="text-4xl mb-3">🖥️</div>
+                  <p className="text-sm text-zinc-300 mb-2">Ready to build with Cursor?</p>
+                  <p className="text-xs text-zinc-500 mb-4">
+                    Generate a detailed prompt based on your whiteboard that you can paste directly into Cursor.
+                  </p>
+                </div>
+                
+                <Button 
+                  onClick={copyPromptToClipboard}
+                  disabled={!aiContent}
+                  className={`w-full py-6 text-base font-semibold transition-all ${
+                    promptCopied 
+                      ? 'bg-green-600 hover:bg-green-600' 
+                      : 'bg-green-500 hover:bg-green-400'
+                  } text-white`}
+                  style={{ fontSize: '0.9em' }}
+                >
+                  {promptCopied ? '✓ Copied to Clipboard!' : '📋 Copy Cursor Prompt'}
+                </Button>
+
+                {generatedPrompt && (
+                  <div className="mt-3 p-3 bg-zinc-900/80 rounded-lg border border-zinc-700/50 max-h-40 overflow-auto">
+                    <p className="text-[0.65em] text-zinc-500 mb-1">Preview:</p>
+                    <pre className="text-[0.6em] text-zinc-400 whitespace-pre-wrap font-mono">
+                      {generatedPrompt.slice(0, 300)}...
+                    </pre>
+                  </div>
+                )}
+
+                <div className="text-xs text-zinc-500 text-center mt-2" style={{ fontSize: '0.7em' }}>
+                  <p>Includes: Project overview, features, tech stack, backend requirements, and build phases</p>
+                </div>
+              </CardContent>
+              <div 
+                className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize bg-green-500/80 hover:bg-green-400 transition-colors"
+                onMouseDown={(e) => handleResizeMouseDown(e, 'prompt')}
+                style={{ borderRadius: '0 0 10px 0' }}
               />
             </Card>
           </div>
@@ -532,7 +1732,7 @@ const ProjectView = () => {
         </Button>
       )}
 
-      {/* AI Assistant Sidebar */}
+      {/* To-Do List Sidebar */}
       {sidebarOpen && (
         <div className="w-80 border-l border-zinc-800 bg-zinc-900 flex flex-col">
           <div className="p-4 border-b border-zinc-800">
@@ -548,29 +1748,71 @@ const ProjectView = () => {
               </Button>
             </div>
             <div className="flex items-center gap-2 mb-1">
-              <Sparkles className="h-5 w-5 text-primary" />
-              <h2 className="font-semibold text-zinc-100">AI Assistant</h2>
+              <span className="text-xl">✅</span>
+              <h2 className="font-semibold text-zinc-100">Project To-Do List</h2>
             </div>
             <p className="text-xs text-zinc-500">
-              Get help organizing your project
+              Track your progress building your app
             </p>
+            {/* Progress Bar */}
+            <div className="mt-3">
+              <div className="flex items-center justify-between text-xs text-zinc-400 mb-1">
+                <span>{completedCount} of {totalCount} completed</span>
+                <span className="font-medium text-zinc-200">{progressPercent}%</span>
+              </div>
+              <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 transition-all duration-300"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+            </div>
           </div>
 
         <ScrollArea className="flex-1 p-4">
           <div className="space-y-4">
-            {messages.map((message, index) => (
-              <div
-                key={index}
-                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-              >
-                <div
-                  className={`rounded-lg p-3 max-w-[85%] ${
-                    message.role === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-zinc-800 text-zinc-200"
-                  }`}
-                >
-                  <p className="text-sm">{message.content}</p>
+              {[1, 2, 3, 4, 5, 6].map((phase) => (
+                <div key={phase}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                      phase === 1 ? 'bg-zinc-700 text-zinc-200' :
+                      phase === 2 ? 'bg-cyan-500/30 text-cyan-200' :
+                      phase === 3 ? 'bg-purple-500/30 text-purple-200' :
+                      phase === 4 ? 'bg-emerald-500/30 text-emerald-200' :
+                      phase === 5 ? 'bg-rose-500/30 text-rose-200' :
+                      'bg-amber-500/30 text-amber-200'
+                    }`}>{phase}</div>
+                    <span className={`text-xs font-medium ${phaseLabels[phase].color}`}>
+                      {phaseLabels[phase].name}
+                    </span>
+                  </div>
+                  <div className="space-y-1 ml-7">
+                    {todos.filter(t => t.phase === phase).map((todo) => (
+                      <div
+                        key={todo.id}
+                        className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-all ${
+                          todo.completed 
+                            ? 'bg-zinc-800/30 opacity-60' 
+                            : 'bg-zinc-800/50 hover:bg-zinc-800'
+                        }`}
+                        onClick={() => toggleTodo(todo.id)}
+                      >
+                        <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                          todo.completed 
+                            ? 'bg-emerald-500 border-emerald-500' 
+                            : 'border-zinc-600 hover:border-zinc-400'
+                        }`}>
+                          {todo.completed && (
+                            <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                        </div>
+                        <span className={`text-xs ${todo.completed ? 'text-zinc-500 line-through' : 'text-zinc-300'}`}>
+                          {todo.text}
+                        </span>
+                      </div>
+                    ))}
                 </div>
               </div>
             ))}
@@ -578,29 +1820,24 @@ const ProjectView = () => {
         </ScrollArea>
 
         <div className="p-4 border-t border-zinc-800">
-          <div className="flex gap-2">
-            <Textarea
-              placeholder="Type your message..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSend();
-                }
-              }}
-              rows={2}
-              className="resize-none bg-zinc-800 border-zinc-700 text-zinc-200"
-            />
-            <Button onClick={handleSend} size="icon" className="shrink-0 h-auto">
-              <Send className="h-4 w-4" />
-            </Button>
+            <div className="text-center">
+              {progressPercent === 100 ? (
+                <div className="text-emerald-400 font-medium text-sm">
+                  🎉 All tasks completed! Ready to launch!
+          </div>
+              ) : (
+                <div className="text-zinc-500 text-xs">
+                  Complete all tasks to finish your project
+                </div>
+              )}
           </div>
         </div>
         </div>
       )}
+
     </div>
   );
 };
 
 export default ProjectView;
+

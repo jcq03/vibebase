@@ -8,6 +8,10 @@ import { AppSidebar } from "@/components/AppSidebar";
 import Index from "./pages/Index";
 import Waitlist from "./pages/Waitlist";
 import Auth from "./pages/Auth";
+import SignUp from "./pages/SignUp";
+import Welcome from "./pages/Welcome";
+import Paywall from "./pages/Paywall";
+import PaymentSuccess from "./pages/PaymentSuccess";
 import Dashboard from "./pages/Dashboard";
 import Projects from "./pages/Projects";
 import ProjectView from "./pages/ProjectView";
@@ -35,6 +39,10 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/waitlist" element={<Waitlist />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/welcome" element={<Welcome />} />
+          <Route path="/paywall" element={<Paywall />} />
+          <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/projects/:id" element={
             <ProtectedRoute>
               <ProjectView />
