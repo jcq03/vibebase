@@ -27,21 +27,66 @@ const Auth = () => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate("/dashboard");
+        await handlePostLogin(session.user.id);
       }
     };
     
     checkUser();
 
     // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session && event === "SIGNED_IN") {
-        navigate("/dashboard");
+        await handlePostLogin(session.user.id);
       }
     });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  // Handle post-login: create project from idea if exists
+  const handlePostLogin = async (userId: string) => {
+    const savedIdea = localStorage.getItem("vibebase_idea");
+    
+    if (savedIdea) {
+      try {
+        // Create a new project with the saved idea
+        const projectName = savedIdea.length > 50 ? savedIdea.substring(0, 50) + "..." : savedIdea;
+        
+        const { data: project, error } = await supabase
+          .from("projects")
+          .insert({
+            user_id: userId,
+            name: projectName,
+            description: savedIdea,
+            features: "",
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error("Error creating project:", error);
+          navigate("/dashboard");
+          return;
+        }
+
+        // Clear the saved idea
+        localStorage.removeItem("vibebase_idea");
+
+        toast({
+          title: "Project created! 🚀",
+          description: "Your idea has been turned into a project.",
+        });
+
+        // Redirect to the project whiteboard
+        navigate(`/projects/${project.id}`);
+      } catch (error) {
+        console.error("Error in post-login:", error);
+        navigate("/dashboard");
+      }
+    } else {
+      navigate("/dashboard");
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

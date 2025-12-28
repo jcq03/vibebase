@@ -57,7 +57,7 @@ const Index = () => {
               <div className="flex gap-3 items-center">
                 <Input
                   type="text"
-                  placeholder="Describe any app idea. We will help you build it."
+                  placeholder="Explain your idea here..."
                   value={ideaInput}
                   onChange={(e) => setIdeaInput(e.target.value)}
                   onKeyDown={(e) => {
@@ -65,12 +65,16 @@ const Index = () => {
                       navigate("/auth");
                     }
                   }}
-                  className="flex-1 h-14 text-base bg-gray-50 border-gray-300 rounded-lg px-6 focus:ring-2 focus:ring-gray-900 focus:border-gray-900"
+                  className="flex-1 h-14 text-base text-gray-900 bg-gray-50 border-gray-300 rounded-lg px-6 focus:ring-2 focus:ring-gray-900 focus:border-gray-900 placeholder:text-gray-500"
                 />
                 <Button
                   size="lg"
                   className="h-14 px-8 rounded-lg bg-gray-900 text-white hover:bg-gray-800 flex items-center gap-2"
-                  onClick={() => navigate("/signup")}
+                  onClick={() => {
+                    // Save the idea to localStorage to use after payment
+                    localStorage.setItem("vibebase_idea", ideaInput.trim());
+                    navigate("/signup");
+                  }}
                   disabled={!ideaInput.trim()}
                 >
                   <Wand2 className="w-5 h-5" />
@@ -120,27 +124,27 @@ const Index = () => {
                 {/* Steps */}
                 <div className="space-y-4">
                   <div className="bg-gray-50 border-2 border-gray-300 rounded-lg p-6">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">01. Connect GitHub</h3>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">01. Generate Detailed Prompts</h3>
                     <p className="text-gray-600">
-                      Code Vibez Tool Kit ingests your repo and any research to build a visual knowledge base ready for planning.
-                        </p>
-                      </div>
+                      Create high-quality, structured prompts for tools like Cursor, Lovable, and other AI builders—covering features, logic, UI behavior, and implementation steps so nothing is vague or missed.
+                    </p>
+                  </div>
                   <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">02. Customize Features</h3>
                     <p className="text-gray-600">
                       Describe how each feature should work, including UI, routes, models, and file paths, in as much detail as you need.
                     </p>
-                    </div>
+                  </div>
                   <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">03. Generate PRDs</h3>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">03. Idea to Detailed Plan & Tracked Progress</h3>
                     <p className="text-gray-600">
-                      Create product requirement docs for new features and auto-document existing ones so you can debug and organize your system.
+                      Turn rough ideas into a clear build plan with defined features, tech stack, and step-by-step tasks—then track progress with a simple to-do system as you build.
                     </p>
                   </div>
                   <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">04. Track Progress</h3>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">04. In-Depth Video Course</h3>
                     <p className="text-gray-600">
-                      Monitor your app building journey with visual milestones and stay motivated with progress tracking.
+                      Learn how to use all the top AI coding and building tools through structured lessons, real examples, ongoing support, and live calls to level up your vibe coding skills.
                     </p>
                   </div>
                 </div>
