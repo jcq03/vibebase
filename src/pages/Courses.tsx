@@ -148,16 +148,31 @@ const Courses = () => {
     }
 
     // Load video URLs from database (so all users can see them)
-    const { data: videos, error } = await supabase
-      .from('course_videos')
-      .select('course_id, video_url');
-    
-    if (!error && videos) {
-      const urlMap: Record<string, string> = {};
-      videos.forEach((v: { course_id: string; video_url: string }) => {
-        urlMap[v.course_id] = v.video_url;
-      });
-      setVideoUrls(urlMap);
+    try {
+      const { data: videos, error } = await supabase
+        .from('course_videos')
+        .select('course_id, video_url');
+      
+      if (!error && videos && videos.length > 0) {
+        const urlMap: Record<string, string> = {};
+        videos.forEach((v: { course_id: string; video_url: string }) => {
+          urlMap[v.course_id] = v.video_url;
+        });
+        setVideoUrls(urlMap);
+      } else {
+        // Fallback to localStorage if no database records
+        const savedVideos = localStorage.getItem('course-videos');
+        if (savedVideos) {
+          setVideoUrls(JSON.parse(savedVideos));
+        }
+      }
+    } catch (error) {
+      console.error('Error loading videos from database:', error);
+      // Fallback to localStorage
+      const savedVideos = localStorage.getItem('course-videos');
+      if (savedVideos) {
+        setVideoUrls(JSON.parse(savedVideos));
+      }
     }
   };
 
@@ -182,22 +197,50 @@ const Courses = () => {
   const saveVideoUrl = async (courseId: string) => {
     const videoUrl = editVideoUrl.trim();
     
+    // Update local state immediately
+    if (videoUrl) {
+      setVideoUrls(prev => ({ ...prev, [courseId]: videoUrl }));
+    } else {
+      setVideoUrls(prev => {
+        const newUrls = { ...prev };
+        delete newUrls[courseId];
+        return newUrls;
+      });
+    }
+    
+    // Save to localStorage as backup
+    const updatedUrls = videoUrl 
+      ? { ...videoUrls, [courseId]: videoUrl }
+      : Object.fromEntries(Object.entries(videoUrls).filter(([k]) => k !== courseId));
+    localStorage.setItem('course-videos', JSON.stringify(updatedUrls));
+    
+    // Try to save to database
     try {
       if (videoUrl) {
-        // Upsert (insert or update) the video URL in database
-        const { error } = await supabase
+        // Check if record exists first
+        const { data: existing } = await supabase
           .from('course_videos')
-          .upsert({ 
-            course_id: courseId, 
-            video_url: videoUrl,
-            updated_at: new Date().toISOString()
-          }, { 
-            onConflict: 'course_id' 
-          });
+          .select('id')
+          .eq('course_id', courseId)
+          .single();
         
-        if (error) throw error;
+        if (existing) {
+          // Update existing record
+          const { error } = await supabase
+            .from('course_videos')
+            .update({ video_url: videoUrl, updated_at: new Date().toISOString() })
+            .eq('course_id', courseId);
+          
+          if (error) throw error;
+        } else {
+          // Insert new record
+          const { error } = await supabase
+            .from('course_videos')
+            .insert({ course_id: courseId, video_url: videoUrl });
+          
+          if (error) throw error;
+        }
         
-        setVideoUrls(prev => ({ ...prev, [courseId]: videoUrl }));
         toast({
           title: "Video link saved!",
           description: "All users can now watch this video",
@@ -211,22 +254,17 @@ const Courses = () => {
         
         if (error) throw error;
         
-        setVideoUrls(prev => {
-          const newUrls = { ...prev };
-          delete newUrls[courseId];
-          return newUrls;
-        });
         toast({
           title: "Video removed",
           description: "Video link has been deleted",
         });
       }
     } catch (error: any) {
-      console.error('Error saving video:', error);
+      console.error('Error saving video to database:', error);
+      // Still show success since localStorage was updated
       toast({
-        title: "Error saving video",
-        description: error.message || "Failed to save video link",
-        variant: "destructive",
+        title: "Video saved locally",
+        description: "Note: Database sync failed. Run the SQL migration in Supabase.",
       });
     }
     
