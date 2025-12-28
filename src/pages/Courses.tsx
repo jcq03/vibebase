@@ -147,10 +147,17 @@ const Courses = () => {
       setCompletedCourses(new Set(JSON.parse(saved)));
     }
 
-    // Load video URLs from localStorage
-    const savedVideos = localStorage.getItem('course-videos');
-    if (savedVideos) {
-      setVideoUrls(JSON.parse(savedVideos));
+    // Load video URLs from database (so all users can see them)
+    const { data: videos, error } = await supabase
+      .from('course_videos')
+      .select('course_id, video_url');
+    
+    if (!error && videos) {
+      const urlMap: Record<string, string> = {};
+      videos.forEach((v: { course_id: string; video_url: string }) => {
+        urlMap[v.course_id] = v.video_url;
+      });
+      setVideoUrls(urlMap);
     }
   };
 
@@ -172,22 +179,59 @@ const Courses = () => {
     }
   };
 
-  const saveVideoUrl = (courseId: string) => {
-    const newVideoUrls = { ...videoUrls };
-    if (editVideoUrl.trim()) {
-      newVideoUrls[courseId] = editVideoUrl.trim();
-    } else {
-      delete newVideoUrls[courseId];
+  const saveVideoUrl = async (courseId: string) => {
+    const videoUrl = editVideoUrl.trim();
+    
+    try {
+      if (videoUrl) {
+        // Upsert (insert or update) the video URL in database
+        const { error } = await supabase
+          .from('course_videos')
+          .upsert({ 
+            course_id: courseId, 
+            video_url: videoUrl,
+            updated_at: new Date().toISOString()
+          }, { 
+            onConflict: 'course_id' 
+          });
+        
+        if (error) throw error;
+        
+        setVideoUrls(prev => ({ ...prev, [courseId]: videoUrl }));
+        toast({
+          title: "Video link saved!",
+          description: "All users can now watch this video",
+        });
+      } else {
+        // Delete the video URL from database
+        const { error } = await supabase
+          .from('course_videos')
+          .delete()
+          .eq('course_id', courseId);
+        
+        if (error) throw error;
+        
+        setVideoUrls(prev => {
+          const newUrls = { ...prev };
+          delete newUrls[courseId];
+          return newUrls;
+        });
+        toast({
+          title: "Video removed",
+          description: "Video link has been deleted",
+        });
+      }
+    } catch (error: any) {
+      console.error('Error saving video:', error);
+      toast({
+        title: "Error saving video",
+        description: error.message || "Failed to save video link",
+        variant: "destructive",
+      });
     }
-    setVideoUrls(newVideoUrls);
-    localStorage.setItem('course-videos', JSON.stringify(newVideoUrls));
+    
     setEditingCourseId(null);
     setEditVideoUrl("");
-    
-    toast({
-      title: "Video link saved!",
-      description: editVideoUrl.trim() ? "Loom video has been added" : "Video link removed",
-    });
   };
 
   const openEditDialog = (courseId: string) => {
