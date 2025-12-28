@@ -42,7 +42,7 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary via-primary to-secondary bg-clip-text text-transparent">
-            Welcome to CodeVibez
+            Welcome to Vibe Base
           </h1>
           <p className="text-muted-foreground text-lg">
             Your AI-powered companion for building amazing software

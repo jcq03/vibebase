@@ -6,7 +6,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Play, BookOpen, Smartphone, Globe, Briefcase, Megaphone } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { CheckCircle2, Play, BookOpen, Smartphone, Globe, Briefcase, Megaphone, Pencil, Video, X } from "lucide-react";
+
+// Admin email - only this user can add video links
+const ADMIN_EMAIL = "jordancquirk@gmail.com";
 
 // Course structure from document
 interface CourseItem {
@@ -118,7 +124,12 @@ const COURSE_SECTIONS: Section[] = [
 
 const Courses = () => {
   const [completedCourses, setCompletedCourses] = useState<Set<string>>(new Set());
+  const [videoUrls, setVideoUrls] = useState<Record<string, string>>({});
   const [userId, setUserId] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [editingCourseId, setEditingCourseId] = useState<string | null>(null);
+  const [editVideoUrl, setEditVideoUrl] = useState("");
+  const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -128,11 +139,18 @@ const Courses = () => {
   const loadProgress = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     setUserId(user?.id || null);
+    setIsAdmin(user?.email === ADMIN_EMAIL);
 
-    // Load from localStorage for now
+    // Load completed courses from localStorage
     const saved = localStorage.getItem('course-progress');
     if (saved) {
       setCompletedCourses(new Set(JSON.parse(saved)));
+    }
+
+    // Load video URLs from localStorage
+    const savedVideos = localStorage.getItem('course-videos');
+    if (savedVideos) {
+      setVideoUrls(JSON.parse(savedVideos));
     }
   };
 
@@ -152,6 +170,37 @@ const Courses = () => {
         description: "Course marked as complete",
       });
     }
+  };
+
+  const saveVideoUrl = (courseId: string) => {
+    const newVideoUrls = { ...videoUrls };
+    if (editVideoUrl.trim()) {
+      newVideoUrls[courseId] = editVideoUrl.trim();
+    } else {
+      delete newVideoUrls[courseId];
+    }
+    setVideoUrls(newVideoUrls);
+    localStorage.setItem('course-videos', JSON.stringify(newVideoUrls));
+    setEditingCourseId(null);
+    setEditVideoUrl("");
+    
+    toast({
+      title: "Video link saved!",
+      description: editVideoUrl.trim() ? "Loom video has been added" : "Video link removed",
+    });
+  };
+
+  const openEditDialog = (courseId: string) => {
+    setEditingCourseId(courseId);
+    setEditVideoUrl(videoUrls[courseId] || "");
+  };
+
+  // Convert Loom share URL to embed URL
+  const getEmbedUrl = (url: string) => {
+    if (url.includes("loom.com/share/")) {
+      return url.replace("/share/", "/embed/");
+    }
+    return url;
   };
 
   const getSectionProgress = (section: Section) => {
@@ -185,12 +234,96 @@ const Courses = () => {
 
   const overall = totalProgress();
 
+  const renderCourseItem = (course: CourseItem, isSubCategory: boolean = false) => {
+    const hasVideo = !!videoUrls[course.id];
+    const isPlaying = playingVideoId === course.id;
+
+    return (
+      <div key={course.id}>
+        <div
+          className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
+            completedCourses.has(course.id) 
+              ? 'bg-green-500/10 border-green-500/30' 
+              : 'bg-card hover:bg-accent/50'
+          }`}
+        >
+          <Checkbox
+            checked={completedCourses.has(course.id)}
+            onCheckedChange={() => toggleCourse(course.id)}
+            className="mt-0.5"
+          />
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <h4 className={`font-medium ${isSubCategory ? 'text-sm' : ''} ${completedCourses.has(course.id) ? 'line-through text-muted-foreground' : ''}`}>
+                {course.title}
+              </h4>
+              {hasVideo && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-primary"
+                  onClick={() => setPlayingVideoId(isPlaying ? null : course.id)}
+                >
+                  <Play className={`w-3 h-3 mr-1 ${isPlaying ? 'fill-current' : ''}`} />
+                  {isPlaying ? 'Hide' : 'Watch'}
+                </Button>
+              )}
+            </div>
+            {course.description && (
+              <p className={`text-muted-foreground mt-0.5 ${isSubCategory ? 'text-xs' : 'text-sm'}`}>{course.description}</p>
+            )}
+          </div>
+          
+          {/* Admin Edit Button */}
+          {isAdmin && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 text-muted-foreground hover:text-primary"
+              onClick={() => openEditDialog(course.id)}
+            >
+              {hasVideo ? <Video className="w-4 h-4" /> : <Pencil className="w-4 h-4" />}
+            </Button>
+          )}
+        </div>
+
+        {/* Video Player */}
+        {isPlaying && videoUrls[course.id] && (
+          <div className="mt-2 rounded-lg overflow-hidden border bg-black aspect-video relative">
+            <iframe
+              src={getEmbedUrl(videoUrls[course.id])}
+              className="w-full h-full"
+              frameBorder="0"
+              allowFullScreen
+              allow="autoplay; fullscreen; picture-in-picture"
+            />
+            <Button
+              variant="secondary"
+              size="sm"
+              className="absolute top-2 right-2"
+              onClick={() => setPlayingVideoId(null)}
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Course Library</h1>
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-3xl font-bold">Course Library</h1>
+            {isAdmin && (
+              <Badge variant="secondary" className="text-xs">
+                Admin Mode
+              </Badge>
+            )}
+          </div>
           <p className="text-muted-foreground mb-4">Master the skills to build and launch your apps</p>
           
           {/* Overall Progress */}
@@ -247,33 +380,7 @@ const Courses = () => {
                       {/* Direct courses (no subcategories) */}
                       {section.courses && (
                         <div className="space-y-2">
-                          {section.courses.map((course) => (
-                            <div
-                              key={course.id}
-                              className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
-                                completedCourses.has(course.id) 
-                                  ? 'bg-green-500/10 border-green-500/30' 
-                                  : 'bg-card hover:bg-accent/50'
-                              }`}
-                            >
-                              <Checkbox
-                                checked={completedCourses.has(course.id)}
-                                onCheckedChange={() => toggleCourse(course.id)}
-                                className="mt-0.5"
-                              />
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2">
-                                  <h4 className={`font-medium ${completedCourses.has(course.id) ? 'line-through text-muted-foreground' : ''}`}>
-                                    {course.title}
-                                  </h4>
-                                  {course.videoUrl && <Play className="w-4 h-4 text-primary" />}
-                                </div>
-                                {course.description && (
-                                  <p className="text-sm text-muted-foreground mt-0.5">{course.description}</p>
-                                )}
-                              </div>
-                            </div>
-                          ))}
+                          {section.courses.map((course) => renderCourseItem(course))}
                         </div>
                       )}
 
@@ -294,33 +401,7 @@ const Courses = () => {
                                   </Badge>
                                 </div>
                                 <div className="p-2 space-y-1">
-                                  {subCat.courses.map((course) => (
-                                    <div
-                                      key={course.id}
-                                      className={`flex items-start gap-3 p-3 rounded-lg transition-colors ${
-                                        completedCourses.has(course.id) 
-                                          ? 'bg-green-500/10' 
-                                          : 'hover:bg-accent/50'
-                                      }`}
-                                    >
-                                      <Checkbox
-                                        checked={completedCourses.has(course.id)}
-                                        onCheckedChange={() => toggleCourse(course.id)}
-                                        className="mt-0.5"
-                                      />
-                                      <div className="flex-1">
-                                        <div className="flex items-center gap-2">
-                                          <h4 className={`font-medium text-sm ${completedCourses.has(course.id) ? 'line-through text-muted-foreground' : ''}`}>
-                                            {course.title}
-                                          </h4>
-                                          {course.videoUrl && <Play className="w-3 h-3 text-primary" />}
-                                        </div>
-                                        {course.description && (
-                                          <p className="text-xs text-muted-foreground mt-0.5">{course.description}</p>
-                                        )}
-                                      </div>
-                                    </div>
-                                  ))}
+                                  {subCat.courses.map((course) => renderCourseItem(course, true))}
                                 </div>
                               </div>
                             );
@@ -335,15 +416,58 @@ const Courses = () => {
           })}
         </Accordion>
 
-        {/* Coming Soon Note */}
-        <Card className="mt-6 bg-muted/50">
-          <CardContent className="py-4 text-center">
-            <p className="text-muted-foreground text-sm">
-              🎬 Video content coming soon! Check back regularly for new lessons.
-            </p>
-          </CardContent>
-        </Card>
+        {/* Admin hint */}
+        {isAdmin && (
+          <Card className="mt-6 bg-primary/5 border-primary/20">
+            <CardContent className="py-4 text-center">
+              <p className="text-sm text-muted-foreground">
+                🔐 <strong>Admin:</strong> Click the pencil icon on any course to add a Loom video link
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Coming Soon Note for non-admins */}
+        {!isAdmin && Object.keys(videoUrls).length === 0 && (
+          <Card className="mt-6 bg-muted/50">
+            <CardContent className="py-4 text-center">
+              <p className="text-muted-foreground text-sm">
+                🎬 Video content coming soon! Check back regularly for new lessons.
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </div>
+
+      {/* Edit Video Dialog */}
+      <Dialog open={!!editingCourseId} onOpenChange={(open) => !open && setEditingCourseId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Video Link</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Loom Video URL</label>
+              <Input
+                placeholder="https://www.loom.com/share/..."
+                value={editVideoUrl}
+                onChange={(e) => setEditVideoUrl(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Paste a Loom share link. It will be automatically converted for embedding.
+              </p>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setEditingCourseId(null)}>
+                Cancel
+              </Button>
+              <Button onClick={() => editingCourseId && saveVideoUrl(editingCourseId)}>
+                Save
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

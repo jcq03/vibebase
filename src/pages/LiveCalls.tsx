@@ -26,12 +26,17 @@ interface Call {
   is_joined?: boolean;
 }
 
+// Admin email - only this user can schedule calls
+const ADMIN_EMAIL = "jordancquirk@gmail.com";
+
 const LiveCalls = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [calls, setCalls] = useState<Call[]>([]);
   const [daysCalls, setDaysCalls] = useState<Call[]>([]);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const { toast } = useToast();
 
   // Form state
@@ -46,6 +51,8 @@ const LiveCalls = () => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setCurrentUser(user?.id || null);
+      setCurrentUserEmail(user?.email || null);
+      setIsAdmin(user?.email === ADMIN_EMAIL);
     };
     getUser();
   }, []);
@@ -244,13 +251,14 @@ const LiveCalls = () => {
             <p className="text-muted-foreground">Schedule and join weekly calls with the community</p>
           </div>
 
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="gap-2">
-                <Plus className="h-4 w-4" />
-                Schedule Call
-              </Button>
-            </DialogTrigger>
+          {isAdmin && (
+            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Schedule Call
+                </Button>
+              </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
                 <DialogTitle>Schedule a New Call</DialogTitle>
@@ -338,6 +346,7 @@ const LiveCalls = () => {
               </form>
             </DialogContent>
           </Dialog>
+          )}
         </div>
 
         <Tabs defaultValue="calendar" className="space-y-6">

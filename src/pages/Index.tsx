@@ -118,7 +118,7 @@ const Index = () => {
                 From idea to app in minutes
               </h2>
                 <p className="text-xl text-gray-600 mb-12 leading-relaxed">
-                Code Vibez analyzes your codebase, helps you plan new features with precision, and keeps your team aligned with automatically generated docs.
+                Vibe Base analyzes your codebase, helps you plan new features with precision, and keeps your team aligned with automatically generated docs.
               </p>
               
                 {/* Steps */}
@@ -200,7 +200,7 @@ const Index = () => {
                   ))}
                 </div>
                 <p className="text-gray-700 mb-4">
-                  "Code Vibez day one: docs organized, cursor-tuned, hyper-restored. This toolkit is incredible!"
+                  "Vibe Base day one: docs organized, cursor-tuned, hyper-restored. This toolkit is incredible!"
                 </p>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded bg-gray-300 flex items-center justify-center text-gray-600 font-semibold">
@@ -311,7 +311,7 @@ const Index = () => {
             ))}
                 </div>
                 <p className="text-gray-700 mb-4">
-                  "Code Vibez turned me from a beginner into a productive developer. Incredible value!"
+                  "Vibe Base turned me from a beginner into a productive developer. Incredible value!"
                 </p>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded bg-gray-300 flex items-center justify-center text-gray-600 font-semibold">
