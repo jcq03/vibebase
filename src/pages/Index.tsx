@@ -152,14 +152,14 @@ const Index = () => {
               
               {/* Right Column - Video */}
               <div className="flex items-center justify-center h-full min-h-[400px] bg-white border border-gray-200 rounded-lg overflow-hidden">
-                <video 
-                  className="w-full h-full object-cover"
-                  controls
-                  poster=""
-                >
-                  <source src="" type="video/mp4" />
-                  Your browser does not support the video tag.
-                </video>
+                <iframe
+                  className="w-full h-full min-h-[400px]"
+                  src="https://www.youtube.com/embed/lBSkrKdOTqk"
+                  title="Vibe Base Demo"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
               </div>
             </div>
           </div>
