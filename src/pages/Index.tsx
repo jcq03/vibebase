@@ -344,6 +344,7 @@ const Index = () => {
               <div className="mb-8">
                 <span className="text-5xl font-bold text-gray-900">$49</span>
                 <span className="text-gray-600 ml-2">one-off lifetime payment</span>
+                <p className="text-sm text-orange-600 font-medium mt-2">Only first 50 users, then $29/month</p>
               </div>
               
               <ul className="space-y-4 mb-8 text-left">

@@ -55,6 +55,7 @@ const Paywall = () => {
               <div className="text-right">
                 <p className="text-2xl font-bold text-gray-900">$49</p>
                 <p className="text-sm text-gray-400 line-through">$348</p>
+                <p className="text-xs text-orange-600 font-medium mt-1">Only first 50 users, then $29/month</p>
               </div>
             </div>
             <div className="mt-4 flex items-center gap-2 text-sm text-green-600 bg-green-50 px-3 py-2 rounded-lg">
