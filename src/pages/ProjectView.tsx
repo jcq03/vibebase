@@ -34,58 +34,145 @@ interface AIContent {
   features: Array<{ name: string; description: string; priority: 'Essential' | 'Core' | 'Recommended' }>;
   appType: {
     recommended: string;
+    appTypeKey: 'mobile' | 'saas' | 'web';
     reasons: string[];
     alternatives: Array<{ name: string; description: string }>;
   };
   tools: Array<{ name: string; description: string; recommended: boolean }>;
   backend: Array<{ name: string; description: string; priority: 'Required' | 'Recommended' | 'Optional' }>;
   phases: Array<{ name: string; week: string; tasks: string[] }>;
+  recommendedAiTool: {
+    name: string;
+    icon: string;
+    description: string;
+  };
+  recommendedCourses: Array<{ title: string; description: string }>;
 }
 
 const generateAIContent = (name: string, description: string, features: string): AIContent => {
+  // Combine all text for analysis
+  const allText = `${name} ${description} ${features}`.toLowerCase();
   const featureList = features.split(/[,\n]/).map(f => f.trim()).filter(f => f.length > 0);
-  const hasAuth = featureList.some(f => f.toLowerCase().includes('auth') || f.toLowerCase().includes('login') || f.toLowerCase().includes('user'));
-  const hasImages = featureList.some(f => f.toLowerCase().includes('image') || f.toLowerCase().includes('photo') || f.toLowerCase().includes('upload'));
-  const hasPayments = featureList.some(f => f.toLowerCase().includes('payment') || f.toLowerCase().includes('stripe') || f.toLowerCase().includes('subscription'));
-  const hasSocial = featureList.some(f => f.toLowerCase().includes('social') || f.toLowerCase().includes('share') || f.toLowerCase().includes('community'));
-  const hasRealtime = featureList.some(f => f.toLowerCase().includes('real-time') || f.toLowerCase().includes('chat') || f.toLowerCase().includes('live'));
   
-  // Determine app type from features/description
-  const isMobile = featureList.some(f => f.toLowerCase().includes('mobile') || f.toLowerCase().includes('ios') || f.toLowerCase().includes('android')) 
-    || description.toLowerCase().includes('mobile') || description.toLowerCase().includes('app store');
-  const isSaas = featureList.some(f => f.toLowerCase().includes('saas') || f.toLowerCase().includes('subscription') || f.toLowerCase().includes('multi-tenant'))
-    || description.toLowerCase().includes('saas') || hasPayments;
+  // Smart feature detection from idea text
+  const hasAuth = allText.includes('auth') || allText.includes('login') || allText.includes('user') || allText.includes('account') || allText.includes('sign up') || allText.includes('register');
+  const hasImages = allText.includes('image') || allText.includes('photo') || allText.includes('upload') || allText.includes('gallery') || allText.includes('picture');
+  const hasPayments = allText.includes('payment') || allText.includes('stripe') || allText.includes('subscription') || allText.includes('checkout') || allText.includes('buy') || allText.includes('sell') || allText.includes('pricing') || allText.includes('monetize');
+  const hasSocial = allText.includes('social') || allText.includes('share') || allText.includes('community') || allText.includes('follow') || allText.includes('friend') || allText.includes('network');
+  const hasRealtime = allText.includes('real-time') || allText.includes('chat') || allText.includes('live') || allText.includes('messaging') || allText.includes('notification');
+  const hasAI = allText.includes('ai') || allText.includes('gpt') || allText.includes('machine learning') || allText.includes('generate') || allText.includes('automate');
+  const hasBooking = allText.includes('book') || allText.includes('schedule') || allText.includes('appointment') || allText.includes('reservation') || allText.includes('calendar');
+  const hasEcommerce = allText.includes('ecommerce') || allText.includes('e-commerce') || allText.includes('shop') || allText.includes('store') || allText.includes('cart') || allText.includes('product');
+  const hasTracker = allText.includes('track') || allText.includes('progress') || allText.includes('goal') || allText.includes('habit') || allText.includes('fitness') || allText.includes('health');
   
-  // Get the appropriate tech stack
-  const appTypeKey = isMobile ? 'mobile' : isSaas ? 'saas' : 'web';
+  // Smart app type detection - analyze the idea holistically
+  const mobileKeywords = ['mobile', 'ios', 'android', 'app store', 'phone', 'native app', 'push notification', 'offline', 'gps', 'camera'];
+  const saasKeywords = ['saas', 'subscription', 'multi-tenant', 'b2b', 'business', 'team', 'workspace', 'dashboard', 'analytics', 'crm', 'enterprise', 'api', 'platform'];
+  const webKeywords = ['website', 'web app', 'landing page', 'portfolio', 'blog', 'marketplace'];
+  
+  const mobileScore = mobileKeywords.filter(kw => allText.includes(kw)).length;
+  const saasScore = saasKeywords.filter(kw => allText.includes(kw)).length + (hasPayments ? 1 : 0) + (hasAuth ? 0.5 : 0);
+  const webScore = webKeywords.filter(kw => allText.includes(kw)).length;
+  
+  // Determine app type based on highest score
+  let appTypeKey: 'mobile' | 'saas' | 'web' = 'web';
+  let recommendedAppType = 'Web Application';
+  
+  if (mobileScore > saasScore && mobileScore > webScore) {
+    appTypeKey = 'mobile';
+    recommendedAppType = 'Mobile App';
+  } else if (saasScore > mobileScore && saasScore > webScore) {
+    appTypeKey = 'saas';
+    recommendedAppType = 'SaaS Application';
+  } else if (hasEcommerce) {
+    appTypeKey = 'web';
+    recommendedAppType = 'E-commerce Web App';
+  } else if (hasBooking) {
+    appTypeKey = 'web';
+    recommendedAppType = 'Booking/Scheduling Web App';
+  }
+  
+  // Get the appropriate tech stack from data
   const recommendedStack = techStacks[appTypeKey];
-  const recommendedAppType = isMobile ? 'Mobile App' : isSaas ? 'SaaS Application' : 'Web Application';
+
+  // Generate smart problem statement based on detected features
+  const generateProblemStatement = () => {
+    if (hasEcommerce) return `${name} provides a seamless online shopping experience, making it easy for customers to discover, purchase, and receive products`;
+    if (hasBooking) return `${name} simplifies scheduling and appointments, eliminating back-and-forth communication and reducing no-shows`;
+    if (hasTracker) return `${name} helps users track their progress and stay motivated by providing clear insights and goal management`;
+    if (hasSocial) return `${name} connects people with shared interests, fostering community engagement and meaningful interactions`;
+    if (hasAI) return `${name} leverages AI to automate tasks and provide intelligent insights, saving users time and effort`;
+    return description || `${name} solves a key problem for users by providing an intuitive, efficient solution`;
+  };
+
+  const generateTargetAudience = () => {
+    if (hasEcommerce) return 'Online shoppers looking for a convenient and trustworthy shopping experience';
+    if (hasBooking) return 'Busy professionals and service providers who need efficient scheduling';
+    if (hasTracker) return 'Goal-oriented individuals who want to track and improve their progress';
+    if (hasSocial) return 'People seeking to connect with like-minded individuals and build community';
+    if (appTypeKey === 'saas') return 'Businesses and teams looking to streamline their workflows';
+    if (appTypeKey === 'mobile') return 'Mobile-first users who need on-the-go access and convenience';
+    return `Users who need ${name.toLowerCase()} functionality for personal or professional use`;
+  };
+
+  // Generate smart features based on detected idea type
+  const smartFeatures = [];
+  
+  // Always add auth if detected
+  if (hasAuth) smartFeatures.push({ name: '🔐 User Authentication', description: 'Sign up, login, password reset, and session management', priority: 'Essential' as const });
+  
+  // Add type-specific features
+  if (hasEcommerce) {
+    smartFeatures.push({ name: '🛒 Shopping Cart', description: 'Add items, manage quantities, and save for later', priority: 'Essential' as const });
+    smartFeatures.push({ name: '💳 Checkout Flow', description: 'Secure payment processing with Stripe integration', priority: 'Essential' as const });
+    smartFeatures.push({ name: '📦 Order Tracking', description: 'Track order status and delivery updates', priority: 'Core' as const });
+  } else if (hasBooking) {
+    smartFeatures.push({ name: '📅 Calendar View', description: 'Visual calendar to see available slots and bookings', priority: 'Essential' as const });
+    smartFeatures.push({ name: '⏰ Booking System', description: 'Select time slots and confirm appointments', priority: 'Essential' as const });
+    smartFeatures.push({ name: '📧 Reminders', description: 'Email and push notification reminders', priority: 'Core' as const });
+  } else if (hasTracker) {
+    smartFeatures.push({ name: '📈 Progress Dashboard', description: 'Visual charts and stats to track your journey', priority: 'Essential' as const });
+    smartFeatures.push({ name: '🎯 Goal Setting', description: 'Set, track, and achieve your personal goals', priority: 'Essential' as const });
+    smartFeatures.push({ name: '🔔 Daily Reminders', description: 'Stay on track with customizable notifications', priority: 'Core' as const });
+  } else if (hasSocial) {
+    smartFeatures.push({ name: '👤 User Profiles', description: 'Customizable profiles with bio and avatar', priority: 'Essential' as const });
+    smartFeatures.push({ name: '📝 Posts & Feed', description: 'Share content and see updates from connections', priority: 'Essential' as const });
+    smartFeatures.push({ name: '💬 Messaging', description: 'Direct messages between users', priority: 'Core' as const });
+  } else {
+    smartFeatures.push({ name: '📊 Dashboard', description: `Main interface for ${name.toLowerCase()} with key data and actions`, priority: 'Essential' as const });
+  }
+  
+  // Add user-specified features
+  featureList.slice(0, 3).forEach((f, i) => {
+    smartFeatures.push({ 
+      name: `📝 ${f}`, 
+      description: `Core functionality for ${f.toLowerCase()}`, 
+      priority: (i === 0 ? 'Essential' : 'Core') as 'Essential' | 'Core' 
+    });
+  });
+  
+  // Add common features based on type
+  if (hasImages) smartFeatures.push({ name: '📷 Image Upload', description: 'Upload and manage photos and images', priority: 'Core' as const });
+  if (hasRealtime) smartFeatures.push({ name: '⚡ Real-time Updates', description: 'Live data sync without page refresh', priority: 'Core' as const });
+  smartFeatures.push({ name: '🔍 Search & Filters', description: 'Find content quickly with search functionality', priority: 'Recommended' as const });
+  smartFeatures.push({ name: '📱 Responsive Design', description: 'Works seamlessly on mobile, tablet, and desktop', priority: 'Recommended' as const });
 
   return {
     overview: {
-      problemStatement: description || `${name} solves a key problem for users by providing an intuitive solution`,
-      targetAudience: `Users who need ${name.toLowerCase()} functionality for personal or professional use`,
-      uniqueValue: `Simple, fast, and AI-powered ${name.toLowerCase()} experience`,
+      problemStatement: generateProblemStatement(),
+      targetAudience: generateTargetAudience(),
+      uniqueValue: hasAI ? `AI-powered ${name.toLowerCase()} that learns and adapts to user needs` : `Simple, fast, and intuitive ${name.toLowerCase()} experience`,
     },
-    features: [
-      ...(hasAuth ? [{ name: '🔐 User Authentication', description: 'Sign up, login, password reset, and session management', priority: 'Essential' as const }] : []),
-      { name: '📊 Dashboard', description: `Main interface for ${name.toLowerCase()} with key data and actions`, priority: 'Essential' as const },
-      ...featureList.slice(0, 3).map((f, i) => ({ 
-        name: `📝 ${f}`, 
-        description: `Core functionality for ${f.toLowerCase()}`, 
-        priority: (i === 0 ? 'Essential' : 'Core') as 'Essential' | 'Core' 
-      })),
-      { name: '🔍 Search & Filters', description: 'Find content quickly with search functionality', priority: 'Recommended' as const },
-      { name: '📱 Responsive Design', description: 'Works seamlessly on mobile, tablet, and desktop', priority: 'Recommended' as const },
-    ],
+    features: smartFeatures,
     appType: {
       recommended: recommendedAppType,
-      reasons: isMobile ? [
+      appTypeKey: appTypeKey,
+      reasons: appTypeKey === 'mobile' ? [
         'Native app experience with offline capabilities',
         'Access to device features (camera, GPS, notifications)',
         'App store distribution for wider reach',
         'Better performance for complex interactions',
-      ] : isSaas ? [
+      ] : appTypeKey === 'saas' ? [
         'Recurring revenue with subscription model',
         'Multi-tenant architecture for scalability',
         'Easier to update and maintain centrally',
@@ -96,11 +183,11 @@ const generateAIContent = (name: string, description: string, features: string):
         'Easier to update and maintain',
         hasRealtime ? 'Supports real-time features natively' : 'Lower development cost than native apps',
       ],
-      alternatives: isMobile ? [
+      alternatives: appTypeKey === 'mobile' ? [
         { name: '🌐 Web Application', description: 'If you want faster development and no app store' },
         { name: '🌐 PWA (Progressive Web App)', description: 'Web app with installable mobile experience' },
         { name: '💼 SaaS', description: 'If you want subscription-based monetization' },
-      ] : isSaas ? [
+      ] : appTypeKey === 'saas' ? [
         { name: '📱 Mobile App', description: 'If you need native app store presence' },
         { name: '🌐 Web Application', description: 'Simpler web app without SaaS features' },
         { name: '🖥️ Desktop App', description: 'For power users needing local access' },
@@ -126,28 +213,63 @@ const generateAIContent = (name: string, description: string, features: string):
     ],
     phases: [
       { name: 'Project Setup', week: 'Week 1', tasks: [
-        `Create ${name} project in Loveable/Bolt`,
-        'Set up Supabase backend',
-        hasAuth ? 'Configure authentication' : 'Set up basic structure',
+        appTypeKey === 'mobile' ? `Create ${name} project in Cursor with React Native/Expo` : `Create ${name} project in Loveable or Bolt`,
+        'Set up Supabase backend (database, auth, storage)',
+        hasAuth ? 'Configure authentication with email/password' : 'Set up basic data structure',
         'Connect to GitHub for version control',
       ]},
       { name: 'Core Features', week: 'Week 2-3', tasks: [
-        'Build main dashboard layout',
+        hasEcommerce ? 'Build product listing and cart' : hasBooking ? 'Build calendar and booking flow' : hasTracker ? 'Build progress dashboard' : 'Build main dashboard layout',
         ...featureList.slice(0, 2).map(f => `Implement ${f}`),
-        'Add form validation and error handling',
+        hasPayments ? 'Integrate Stripe for payments' : 'Add form validation and error handling',
+        hasImages ? 'Set up image upload with Supabase Storage' : 'Add data persistence',
       ]},
       { name: 'Polish & UX', week: 'Week 4', tasks: [
         'Add search and filter functionality',
-        'Improve responsive design',
+        appTypeKey === 'mobile' ? 'Optimize for different screen sizes' : 'Improve responsive design',
         'Add loading states and animations',
-        'Optimize performance',
+        hasRealtime ? 'Configure real-time subscriptions' : 'Optimize database queries',
       ]},
-      { name: 'Launch', week: 'Week 5', tasks: [
+      { name: 'Testing & Launch', week: 'Week 5', tasks: [
         'Test all features thoroughly',
         'Fix bugs and edge cases',
-        'Deploy to Vercel/Netlify',
-        'Set up custom domain',
+        appTypeKey === 'mobile' ? 'Submit to App Store / Play Store' : 'Deploy to Vercel',
+        'Set up custom domain and analytics',
       ]},
+    ],
+    // Recommended AI tool based on app type
+    recommendedAiTool: appTypeKey === 'mobile' ? {
+      name: 'Cursor AI',
+      icon: '🖥️',
+      description: 'Best for mobile development with React Native/Expo. Use Cursor to build and refine your mobile app code.',
+    } : appTypeKey === 'saas' ? {
+      name: 'Cursor AI',
+      icon: '🖥️',
+      description: 'Best for complex SaaS applications. Use Cursor for building scalable features and integrations.',
+    } : {
+      name: 'Loveable',
+      icon: '💜',
+      description: 'Best for web apps. Describe your idea and get a working app instantly. Export to Cursor for advanced edits.',
+    },
+    // Recommended courses based on app type and features
+    recommendedCourses: appTypeKey === 'mobile' ? [
+      { title: '📱 Mobile App Fundamentals', description: 'Setting up React Native with Expo' },
+      { title: '🔐 Mobile Authentication', description: 'Implementing auth with Supabase in mobile' },
+      { title: '💳 In-App Purchases', description: 'Setting up RevenueCat for subscriptions' },
+      { title: '📲 App Store Submission', description: 'Publishing to iOS App Store and Google Play' },
+    ] : appTypeKey === 'saas' ? [
+      { title: '🚀 SaaS Foundations', description: 'Building multi-tenant applications' },
+      { title: '🔐 User Authentication', description: 'Supabase auth with roles and permissions' },
+      { title: '💳 Stripe Integration', description: 'Subscriptions and billing for SaaS' },
+      { title: '📊 Analytics & Dashboards', description: 'Building admin panels and analytics' },
+      ...(hasPayments ? [{ title: '💰 Payment Webhooks', description: 'Handling Stripe webhooks securely' }] : []),
+    ] : [
+      { title: '💜 Loveable Basics', description: 'Building your first app with Loveable' },
+      { title: '🖥️ Cursor Editing', description: 'Exporting to Cursor and making advanced edits' },
+      { title: '🗄️ Supabase Setup', description: 'Connecting your database and auth' },
+      { title: '▲ Deploying to Vercel', description: 'Going live with your web app' },
+      ...(hasAuth ? [{ title: '🔐 Authentication Deep Dive', description: 'Advanced auth patterns and security' }] : []),
+      ...(hasPayments ? [{ title: '💳 Stripe Checkout', description: 'Adding payments to your web app' }] : []),
     ],
   };
 };
@@ -1629,6 +1751,24 @@ Let's begin with Phase 1. What files and structure should I create first?`;
                       </Button>
                     </div>
                   </>
+                ) : aiContent?.recommendedCourses && aiContent.recommendedCourses.length > 0 ? (
+                  <div className="space-y-2">
+                    {aiContent.recommendedCourses.map((course, index) => (
+                      <div key={index} className="p-2 bg-indigo-900/30 rounded-lg border border-indigo-500/20">
+                        <p className="text-sm text-indigo-200 font-medium" style={{ fontSize: '0.85em' }}>{course.title}</p>
+                        <p className="text-xs text-zinc-400 mt-0.5" style={{ fontSize: '0.7em' }}>{course.description}</p>
+                      </div>
+                    ))}
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="w-full mt-2 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-900/30"
+                      onClick={() => navigate('/courses')}
+                      style={{ fontSize: '0.8em' }}
+                    >
+                      View All Courses →
+                    </Button>
+                  </div>
                 ) : (
                   <div className="flex-1 flex items-center justify-center">
                     <div className="text-center text-zinc-500">
@@ -1669,18 +1809,20 @@ Let's begin with Phase 1. What files and structure should I create first?`;
                       <p className="text-[0.6em] uppercase tracking-[0.2em] text-green-300/80 mb-1">
                         🚀 Start Building
                       </p>
-                      <CardTitle className="text-lg text-green-300" style={{ textShadow: '0 0 8px rgba(34, 197, 94, 0.8), 0 0 18px rgba(34, 197, 94, 0.6)', fontSize: '1em' }}>Cursor Prompt</CardTitle>
+                      <CardTitle className="text-lg text-green-300" style={{ textShadow: '0 0 8px rgba(34, 197, 94, 0.8), 0 0 18px rgba(34, 197, 94, 0.6)', fontSize: '1em' }}>
+                        {aiContent?.recommendedAiTool?.name || 'AI'} Prompt
+                      </CardTitle>
                 </div>
                   </div>
                 </div>
-                <p className="text-xs text-zinc-400 ml-10" style={{ fontSize: '0.75em' }}>Generate a prompt for Cursor AI</p>
+                <p className="text-xs text-zinc-400 ml-10" style={{ fontSize: '0.75em' }}>Generate a prompt for {aiContent?.recommendedAiTool?.name || 'your AI tool'}</p>
               </CardHeader>
               <CardContent className="space-y-3 flex-1 overflow-auto pr-1">
                 <div className="text-center py-2">
-                  <div className="text-4xl mb-3">🖥️</div>
-                  <p className="text-sm text-zinc-300 mb-2">Ready to build with Cursor?</p>
+                  <div className="text-4xl mb-3">{aiContent?.recommendedAiTool?.icon || '🖥️'}</div>
+                  <p className="text-sm text-zinc-300 mb-2">Ready to build with {aiContent?.recommendedAiTool?.name || 'AI'}?</p>
                   <p className="text-xs text-zinc-500 mb-4">
-                    Generate a detailed prompt based on your whiteboard that you can paste directly into Cursor.
+                    {aiContent?.recommendedAiTool?.description || 'Generate a detailed prompt based on your whiteboard.'}
                   </p>
                 </div>
                 
@@ -1694,7 +1836,7 @@ Let's begin with Phase 1. What files and structure should I create first?`;
                   } text-white`}
                   style={{ fontSize: '0.9em' }}
                 >
-                  {promptCopied ? '✓ Copied to Clipboard!' : '📋 Copy Cursor Prompt'}
+                  {promptCopied ? '✓ Copied to Clipboard!' : `📋 Copy ${aiContent?.recommendedAiTool?.name || 'AI'} Prompt`}
                 </Button>
 
                 {generatedPrompt && (
