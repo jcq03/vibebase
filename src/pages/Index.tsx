@@ -52,6 +52,18 @@ const Index = () => {
               Get started today, and receive all new features for free: AI-powered tools, step-by-step guidance, live build calls and more
             </p>
             
+            {/* Video Section */}
+            <div className="max-w-3xl mx-auto mt-10 rounded-xl overflow-hidden shadow-2xl border border-gray-200">
+              <iframe
+                className="w-full aspect-video"
+                src="https://www.youtube.com/embed/lBSkrKdOTqk"
+                title="Vibe Base Demo"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            </div>
+            
             {/* Idea Input Section */}
             <div className="max-w-2xl mx-auto w-full mt-12">
               <div className="flex gap-3 items-center">
@@ -133,14 +145,14 @@ const Index = () => {
                     <h3 className="text-xl font-bold text-gray-900 mb-2">02. Customize Features</h3>
                     <p className="text-gray-600">
                       Describe how each feature should work, including UI, routes, models, and file paths, in as much detail as you need.
-                    </p>
-                  </div>
+                        </p>
+                      </div>
                   <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">03. Idea to Detailed Plan & Tracked Progress</h3>
                     <p className="text-gray-600">
                       Turn rough ideas into a clear build plan with defined features, tech stack, and step-by-step tasks—then track progress with a simple to-do system as you build.
                     </p>
-                  </div>
+                    </div>
                   <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">04. In-Depth Video Course</h3>
                     <p className="text-gray-600">
@@ -148,17 +160,14 @@ const Index = () => {
                     </p>
                   </div>
                 </div>
-              </div>
-              
-              {/* Right Column - Video */}
-              <div className="flex items-center justify-center h-full min-h-[400px] bg-white border border-gray-200 rounded-lg overflow-hidden">
-                <iframe
-                  className="w-full h-full min-h-[400px]"
-                  src="https://www.youtube.com/embed/lBSkrKdOTqk"
-                  title="Vibe Base Demo"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
+            </div>
+            
+              {/* Right Column - Image */}
+              <div className="h-full min-h-[400px] bg-white border border-gray-200 rounded-xl overflow-hidden shadow-lg">
+                <img 
+                  src="https://znvstbggiqsecovmtfzx.supabase.co/storage/v1/object/public/images/Screenshot%202026-01-04%20at%2011.41.12.png"
+                  alt="Vibe Base Dashboard Preview"
+                  className="w-full h-full object-cover object-top"
                 />
               </div>
             </div>
