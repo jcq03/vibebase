@@ -45,11 +45,10 @@ const Index = () => {
               Special Offer: Get Started Today
             </div>
             <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-tight text-gray-900">
-              Build Your First App in{" "}
-              <span className="block mt-2">30 Days</span>
+              The Quickest & Easiest Way To Build & Launch Your App or SaaS 🔥
             </h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed mt-6">
-              Get started today, and receive all new features for free: AI-powered tools, step-by-step guidance, live build calls and more
+              Everything you need to plan, build, and launch your app — including guided planning, the right tech stack, a complete course library, live calls, integrations, and ongoing support.
             </p>
             
             {/* Video Section */}
@@ -96,7 +95,7 @@ const Index = () => {
               
               {/* Pricing text moved below text box */}
               <div className="text-sm text-gray-600 mt-4 text-center">
-                Value: <span className="line-through">$348</span> - get it for only <span className="font-bold text-gray-900">$49</span> one-off life time payment
+                Start your <span className="font-bold text-gray-900">14-day free trial</span> then just <span className="font-bold text-gray-900">$29/month</span>
               </div>
             </div>
             
@@ -159,7 +158,7 @@ const Index = () => {
                       Learn how to use all the top AI coding and building tools through structured lessons, real examples, ongoing support, and live calls to level up your vibe coding skills.
                     </p>
                   </div>
-                </div>
+              </div>
             </div>
             
               {/* Right Column - Image */}
@@ -351,9 +350,9 @@ const Index = () => {
             <div className="bg-white border-2 border-gray-900 rounded-lg p-8 max-w-md mx-auto relative overflow-visible">
               <h3 className="text-2xl font-bold text-gray-900 mb-6">Pro Builder</h3>
               <div className="mb-8">
-                <span className="text-5xl font-bold text-gray-900">$49</span>
-                <span className="text-gray-600 ml-2">one-off lifetime payment</span>
-                <p className="text-sm text-orange-600 font-medium mt-2">Only first 50 users, then $29/month</p>
+                <span className="text-5xl font-bold text-gray-900">$29</span>
+                <span className="text-gray-600 ml-2">/month</span>
+                <p className="text-sm text-green-600 font-medium mt-2">Start with a 14-day free trial</p>
               </div>
               
               <ul className="space-y-4 mb-8 text-left">
@@ -390,7 +389,7 @@ const Index = () => {
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
                   }}
                 >
-                  Limited time offer, GET NOW!
+                  Cancel anytime • No commitment
                 </div>
               </div>
             </div>

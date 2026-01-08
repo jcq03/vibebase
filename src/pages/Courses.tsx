@@ -137,8 +137,8 @@ const Courses = () => {
   }, []);
 
   const loadProgress = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    setUserId(user?.id || null);
+      const { data: { user } } = await supabase.auth.getUser();
+      setUserId(user?.id || null);
     setIsAdmin(user?.email === ADMIN_EMAIL);
 
     // Load completed courses from localStorage
@@ -234,13 +234,13 @@ const Courses = () => {
           if (error) throw error;
         } else {
           // Insert new record
-          const { error } = await supabase
+        const { error } = await supabase
             .from('course_videos')
             .insert({ course_id: courseId, video_url: videoUrl });
-          
-          if (error) throw error;
+
+        if (error) throw error;
         }
-        
+
         toast({
           title: "Video link saved!",
           description: "All users can now watch this video",
@@ -251,9 +251,9 @@ const Courses = () => {
           .from('course_videos')
           .delete()
           .eq('course_id', courseId);
-        
+
         if (error) throw error;
-        
+
         toast({
           title: "Video removed",
           description: "Video link has been deleted",
@@ -397,7 +397,7 @@ const Courses = () => {
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
+      <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
             <h1 className="text-3xl font-bold">Course Library</h1>
             {isAdmin && (
@@ -405,7 +405,7 @@ const Courses = () => {
                 Admin Mode
               </Badge>
             )}
-          </div>
+      </div>
           <p className="text-muted-foreground mb-4">Master the skills to build and launch your apps</p>
           
           {/* Overall Progress */}
@@ -429,14 +429,14 @@ const Courses = () => {
         <Accordion type="multiple" defaultValue={["fundamentals"]} className="space-y-4">
           {COURSE_SECTIONS.map((section) => {
             const progress = getSectionProgress(section);
-            
-            return (
+          
+          return (
               <AccordionItem key={section.id} value={section.id} className="border rounded-xl overflow-hidden">
                 <Card className="border-0">
-                  <AccordionTrigger className="px-6 hover:no-underline">
-                    <CardHeader className="p-0 w-full">
-                      <div className="flex items-center justify-between w-full pr-4">
-                        <div className="flex items-center gap-3">
+                <AccordionTrigger className="px-6 hover:no-underline">
+                  <CardHeader className="p-0 w-full">
+                    <div className="flex items-center justify-between w-full pr-4">
+                      <div className="flex items-center gap-3">
                           <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${section.color} flex items-center justify-center text-white`}>
                             {section.icon}
                           </div>
@@ -455,9 +455,9 @@ const Courses = () => {
                         </div>
                       </div>
                       <Progress value={progress.percentage} className="mt-4" />
-                    </CardHeader>
-                  </AccordionTrigger>
-                  <AccordionContent>
+                  </CardHeader>
+                </AccordionTrigger>
+                <AccordionContent>
                     <CardContent className="pt-4">
                       {/* Direct courses (no subcategories) */}
                       {section.courses && (
@@ -471,32 +471,32 @@ const Courses = () => {
                         <div className="space-y-4">
                           {section.subCategories.map((subCat) => {
                             const subCompleted = subCat.courses.filter(c => completedCourses.has(c.id)).length;
-                            return (
+                        return (
                               <div key={subCat.id} className="border rounded-lg overflow-hidden">
                                 <div className="bg-muted/50 px-4 py-3 flex items-center justify-between">
-                                  <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2">
                                     {subCat.icon}
                                     <span className="font-medium">{subCat.name}</span>
                                   </div>
                                   <Badge variant="outline" className="text-xs">
                                     {subCompleted}/{subCat.courses.length}
                                   </Badge>
-                                </div>
+                              </div>
                                 <div className="p-2 space-y-1">
                                   {subCat.courses.map((course) => renderCourseItem(course, true))}
                                 </div>
-                              </div>
-                            );
-                          })}
-                        </div>
+                            </div>
+                        );
+                      })}
+                    </div>
                       )}
-                    </CardContent>
-                  </AccordionContent>
-                </Card>
-              </AccordionItem>
-            );
-          })}
-        </Accordion>
+                  </CardContent>
+                </AccordionContent>
+              </Card>
+            </AccordionItem>
+          );
+        })}
+      </Accordion>
 
         {/* Admin hint */}
         {isAdmin && (

@@ -455,12 +455,12 @@ const ProjectView = () => {
         // Load card positions and sizes
         const cardData = project.card_positions as any;
         if (cardData) {
-          if (cardData.positions) {
+        if (cardData.positions) {
             setPositions((prev) => ({ ...prev, ...(cardData.positions as Partial<typeof positions>) }));
-          } else {
+        } else {
             setPositions((prev) => ({ ...prev, ...(cardData as Partial<typeof positions>) }));
-          }
-          if (cardData.sizes) {
+        }
+        if (cardData.sizes) {
             setSizes((prev) => ({ ...prev, ...(cardData.sizes as Partial<typeof sizes>) }));
           }
         }
@@ -1235,8 +1235,8 @@ Let's begin with Phase 1. What files and structure should I create first?`;
                       title="Edit card"
                     >
                       <Pencil className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
+                  </Button>
+                </div>
                 </div>
                 <p className="text-xs text-zinc-400 ml-10" style={{ fontSize: '0.75em' }}>Essential features &amp; recommendations</p>
               </CardHeader>
@@ -1258,7 +1258,7 @@ Let's begin with Phase 1. What files and structure should I create first?`;
                       <Button size="sm" variant="outline" onClick={cancelEdit} className="flex-1 border-zinc-600 text-zinc-300 hover:bg-zinc-800">
                         <X className="h-3 w-3 mr-1" /> Cancel
                       </Button>
-                    </div>
+                </div>
                   </>
                 ) : (
                   <>
@@ -1269,7 +1269,7 @@ Let's begin with Phase 1. What files and structure should I create first?`;
                           {feature.description}
                         </p>
                         <Badge className={`text-[0.65em] ${feature.priority === 'Essential' ? 'bg-cyan-500/20 text-cyan-300' : feature.priority === 'Core' ? 'bg-zinc-600/50 text-zinc-200' : 'bg-zinc-700/50 text-zinc-300'}`}>{feature.priority}</Badge>
-                      </div>
+                </div>
                     )) || (
                       <div className="text-zinc-500 text-center py-4">Loading features...</div>
                     )}
@@ -1327,8 +1327,8 @@ Let's begin with Phase 1. What files and structure should I create first?`;
                       title="Edit card"
                     >
                       <Pencil className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
+                  </Button>
+                </div>
                 </div>
                 <p className="text-xs text-zinc-400 ml-10" style={{ fontSize: '0.75em' }}>Platform recommendation based on your idea</p>
               </CardHeader>
@@ -1343,7 +1343,7 @@ Let's begin with Phase 1. What files and structure should I create first?`;
                         onChange={(e) => setEditFormData({ ...editFormData, recommended: e.target.value })}
                         className="w-full bg-zinc-800 border border-zinc-600 text-zinc-100 text-sm rounded px-2 py-1"
                       />
-                    </div>
+                </div>
                     <div className="space-y-1">
                       <p className="text-zinc-400 font-medium text-xs">Reasons (one per line)</p>
                       <Textarea
@@ -1379,16 +1379,16 @@ Let's begin with Phase 1. What files and structure should I create first?`;
                           </>
                         )}
                       </ul>
-                    </div>
-                    <div className="space-y-2">
+                </div>
+                <div className="space-y-2">
                       <p className="text-xs font-medium text-zinc-300" style={{ fontSize: '0.8em' }}>Other Options:</p>
                       {aiContent?.appType.alternatives.map((alt, i) => (
                         <div key={i} className="p-2 bg-zinc-900/50 rounded-lg border border-zinc-800/50">
                           <div className="text-sm font-medium text-zinc-300" style={{ fontSize: '0.85em' }}>{alt.name}</div>
                           <p className="text-xs text-zinc-500" style={{ fontSize: '0.7em' }}>
                             {alt.description}
-                          </p>
-                        </div>
+                  </p>
+                </div>
                       )) || (
                         <div className="text-zinc-500 text-center py-2">Loading alternatives...</div>
                       )}
@@ -1427,8 +1427,8 @@ Let's begin with Phase 1. What files and structure should I create first?`;
                         🤖 AI Coding Tools
                       </p>
                       <CardTitle className="text-lg text-emerald-300" style={{ textShadow: '0 0 8px rgba(52, 211, 153, 0.8), 0 0 18px rgba(52, 211, 153, 0.6)', fontSize: '1em' }}>Build With AI</CardTitle>
-                    </div>
-                  </div>
+                </div>
+                </div>
                   <div className="flex gap-1">
                     <Button 
                       variant="ghost" 
@@ -1448,7 +1448,7 @@ Let's begin with Phase 1. What files and structure should I create first?`;
                     >
                       <Pencil className="h-3.5 w-3.5" />
                     </Button>
-                  </div>
+                </div>
                 </div>
                 <p className="text-xs text-zinc-400 ml-10" style={{ fontSize: '0.75em' }}>Best AI tools to build your app faster</p>
               </CardHeader>
@@ -1465,7 +1465,7 @@ Let's begin with Phase 1. What files and structure should I create first?`;
                     <div className="flex gap-2 mt-2">
                       <Button size="sm" onClick={() => saveCardEdits('tools')} className="flex-1 bg-emerald-600 hover:bg-emerald-700">
                         <Check className="h-3 w-3 mr-1" /> Save
-                      </Button>
+                </Button>
                       <Button size="sm" variant="outline" onClick={cancelEdit} className="flex-1 border-zinc-600 text-zinc-300 hover:bg-zinc-800">
                         <X className="h-3 w-3 mr-1" /> Cancel
                       </Button>
@@ -1538,8 +1538,8 @@ Let's begin with Phase 1. What files and structure should I create first?`;
                       title="Edit card"
                     >
                       <Pencil className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
+                  </Button>
+                </div>
                 </div>
                 <p className="text-xs text-zinc-400 ml-10" style={{ fontSize: '0.75em' }}>Step-by-step development roadmap</p>
               </CardHeader>
@@ -1614,7 +1614,7 @@ Let's begin with Phase 1. What files and structure should I create first?`;
                         ⚙️ Backend Requirements
                       </p>
                       <CardTitle className="text-lg text-rose-300" style={{ textShadow: '0 0 8px rgba(244, 63, 94, 0.8), 0 0 18px rgba(244, 63, 94, 0.6)', fontSize: '1em' }}>Backend Features</CardTitle>
-                    </div>
+                </div>
                   </div>
                   <div className="flex gap-1">
                     <Button 
@@ -1668,7 +1668,7 @@ Let's begin with Phase 1. What files and structure should I create first?`;
                           {item.description}
                         </p>
                         <Badge className={`text-[0.6em] mt-1 ${item.priority === 'Required' ? 'bg-rose-500/20 text-rose-300' : item.priority === 'Recommended' ? 'bg-zinc-600/50 text-zinc-200' : 'bg-zinc-700/50 text-zinc-300'}`}>{item.priority}</Badge>
-                      </div>
+                </div>
                     )) || (
                       <div className="text-zinc-500 text-center py-4">Loading backend features...</div>
                     )}
@@ -1706,7 +1706,7 @@ Let's begin with Phase 1. What files and structure should I create first?`;
                         🎬 Learning Path
                       </p>
                       <CardTitle className="text-lg text-indigo-300" style={{ textShadow: '0 0 8px rgba(99, 102, 241, 0.8), 0 0 18px rgba(99, 102, 241, 0.6)', fontSize: '1em' }}>Course Videos to Follow</CardTitle>
-                    </div>
+                </div>
                   </div>
                   <div className="flex gap-1">
                     <Button 
@@ -1752,7 +1752,7 @@ Let's begin with Phase 1. What files and structure should I create first?`;
                     </div>
                   </>
                 ) : aiContent?.recommendedCourses && aiContent.recommendedCourses.length > 0 ? (
-                  <div className="space-y-2">
+                <div className="space-y-2">
                     {aiContent.recommendedCourses.map((course, index) => (
                       <div key={index} className="p-2 bg-indigo-900/30 rounded-lg border border-indigo-500/20">
                         <p className="text-sm text-indigo-200 font-medium" style={{ fontSize: '0.85em' }}>{course.title}</p>

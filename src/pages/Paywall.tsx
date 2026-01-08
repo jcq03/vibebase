@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Shield, Lock, Check, Loader2 } from "lucide-react";
 
 // Stripe Payment Link
-const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/9B65kw6sKeNsahoenSco000";
+const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/4gM7sEbN4dJoexEdjOco001";
 
 const Paywall = () => {
   const navigate = useNavigate();
@@ -49,18 +49,16 @@ const Paywall = () => {
           <div className="bg-gray-50 p-6 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-semibold text-gray-900">Pro Builder - Lifetime</p>
-                <p className="text-sm text-gray-500">One-time payment</p>
+                <p className="font-semibold text-gray-900">Pro Builder</p>
+                <p className="text-sm text-gray-500">Monthly subscription</p>
               </div>
               <div className="text-right">
-                <p className="text-2xl font-bold text-gray-900">$49</p>
-                <p className="text-sm text-gray-400 line-through">$348</p>
-                <p className="text-xs text-orange-600 font-medium mt-1">Only first 50 users, then $29/month</p>
+                <p className="text-2xl font-bold text-gray-900">$29<span className="text-base font-normal text-gray-500">/mo</span></p>
               </div>
             </div>
             <div className="mt-4 flex items-center gap-2 text-sm text-green-600 bg-green-50 px-3 py-2 rounded-lg">
               <Check className="w-4 h-4" />
-              <span>You're saving $299 (86% off)</span>
+              <span>14-day free trial included</span>
             </div>
           </div>
 
@@ -76,7 +74,7 @@ const Paywall = () => {
                 "All Step-by-Step Courses",
                 "Weekly Live Build Calls",
                 "Private Community Access",
-                "Lifetime Updates",
+                "Priority Support",
               ].map((feature, i) => (
                 <li key={i} className="flex items-center gap-3">
                   <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
@@ -101,7 +99,7 @@ const Paywall = () => {
               ) : (
                 <span className="flex items-center justify-center gap-2">
                   <Lock className="w-4 h-4" />
-                  Pay $49 - Get Lifetime Access
+                  Start 14-Day Free Trial
                 </span>
               )}
             </Button>
@@ -113,10 +111,10 @@ const Paywall = () => {
             </div>
           </div>
 
-          {/* Money Back Guarantee */}
+          {/* Cancel Anytime */}
           <div className="bg-green-50 p-4 text-center border-t border-green-100">
             <p className="text-sm text-green-700 font-medium">
-              ✓ 30-day money-back guarantee • No questions asked
+              ✓ Cancel anytime • No commitment required
             </p>
           </div>
         </div>

@@ -184,7 +184,7 @@ const Welcome = () => {
           </Button>
           
           <p className="text-gray-500 text-sm mt-6">
-            🔒 Secure checkout • Cancel anytime • Lifetime access
+            🔒 Secure checkout • 14-day free trial • Cancel anytime
           </p>
         </div>
       </section>

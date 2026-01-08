@@ -53,22 +53,22 @@ const Tools = () => {
 
     return (
       <Card className="bg-zinc-900/50 border-zinc-800">
-        <CardHeader>
-          <div className="flex items-center gap-3 mb-2">
-            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center`}>
-              <Icon className="h-6 w-6 text-white" />
-            </div>
-            <div>
+      <CardHeader>
+        <div className="flex items-center gap-3 mb-2">
+          <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center`}>
+            <Icon className="h-6 w-6 text-white" />
+          </div>
+          <div>
               <CardTitle className="text-2xl text-zinc-100">{stack.title}</CardTitle>
               <CardDescription className="mt-1 text-zinc-400">{stack.description}</CardDescription>
-            </div>
           </div>
-        </CardHeader>
-        <CardContent>
+        </div>
+      </CardHeader>
+      <CardContent>
           <div className="space-y-3">
             {stack.tools.map((tool, index) => (
-              <div
-                key={index}
+            <div
+              key={index}
                 className="p-4 bg-zinc-800/50 border border-zinc-700/50 rounded-lg hover:border-zinc-600 transition-all"
               >
                 <div className="flex items-center justify-between mb-2">
@@ -78,12 +78,12 @@ const Tools = () => {
                   </Badge>
                 </div>
                 <p className="text-sm text-zinc-400">{tool.description}</p>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    );
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
   };
 
   return (
